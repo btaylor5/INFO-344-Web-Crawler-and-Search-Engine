@@ -9,7 +9,11 @@
 error_reporting(E_ALL);
 include_once('DBAccess.php');
 $DB_Connection = new DBAccess();
-
+if(isset($_REQUEST['name'])) {
+    $DB_Connection->getPlayer($_REQUEST['name']);
+} else {
+    $DB_Connection->getAll();
+}
 ?>
 <html>
     <head>

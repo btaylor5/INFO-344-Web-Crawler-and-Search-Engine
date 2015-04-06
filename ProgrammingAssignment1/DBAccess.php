@@ -13,13 +13,35 @@ class DBAccess {
     function __construct() {
         $config = include_once('config.php');
         try {
-            $this->connection = new PDO($config['host'], $config['username'], $config['password']);
+            $this->connection = new PDO($config['DBProvider'] . ':' . 'host=' . $config['host'] . ';' . 'port=' . $config['port'] . ';' . 'dbname=' . $config['dbname'], $config['username'], $config['password']);
             $this->connection->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-            $this->connection->prepare( "SELECT * FROM Users" );
         } catch ( PDOException $e ) {
             echo "Error Connecting with the Database";
             echo phpinfo();
             file_put_contents( 'DB_Error_Log.txt', $e->getMessage() . "\n", FILE_APPEND);
         }
     }
+
+    function getAll() {
+        $query = $this->connection->prepare("SELECT * FROM nbaStats");
+        $query->execute();
+
+        $this->printAllOfColumn($query, 'PlayerName');
+
+    }
+
+    function getPlayer($name) {
+        $query = $this->connection->prepare("SELECT * FROM nbaStats WHERE PlayerName = ?");
+        $query->execute(array ($name));
+
+        $this->printAllOfColumn($query, 'PlayerName');
+    }
+
+    function printAllOfColumn($query, $column) {
+        while ($row = $query->fetch(PDO::FETCH_ASSOC))
+        {
+            echo $row[$column] . "</br>";
+        }
+    }
+
 }
