@@ -7,7 +7,7 @@
  */
 
 return array(
-    'host' => '',
+    'host' => 'test',
     'username' => '',
     'password' => ''
 );
