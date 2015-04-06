@@ -7,6 +7,9 @@
  */
 // TODO: REMOVE BEFORE FINALIZED
 error_reporting(E_ALL);
+include_once('DBAccess.php');
+$DB_Connection = new DBAccess();
+
 ?>
 <html>
     <head>

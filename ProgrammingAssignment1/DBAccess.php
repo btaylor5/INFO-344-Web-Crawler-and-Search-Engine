@@ -9,19 +9,17 @@
 class DBAccess {
 
     private $connection;
-    private $config;
-
 
     function __construct() {
         $config = include_once('config.php');
         try {
-            $connection = new PDO($config['host'], $config['username'], $config['password']);
-            $connection->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
-            $connection->prepare( "SELECT * FROM Users" );
+            $this->connection = new PDO($config['host'], $config['username'], $config['password']);
+            $this->connection->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
+            $this->connection->prepare( "SELECT * FROM Users" );
         } catch ( PDOException $e ) {
-            echo "I'm sorry there is a problem with your operation..";
-            file_put_contents( 'dbErrors.txt', $e->getMessage(), FILE_APPEND );
+            echo "Error Connecting with the Database";
+            echo phpinfo();
+            file_put_contents( 'DB_Error_Log.txt', $e->getMessage() . "\n", FILE_APPEND);
         }
     }
-
 }
