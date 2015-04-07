@@ -7,7 +7,10 @@
  */
 
 return array(
-    'host' => 'test',
+    'DBProvider' => '',
+    'host' => '',
+    'port' => '',
+    'dbname' => '',
     'username' => '',
     'password' => ''
 );
