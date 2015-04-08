@@ -8,11 +8,14 @@
 // TODO: REMOVE BEFORE FINALIZED
 error_reporting(E_ALL);
 include_once('DBAccess.php');
+include_once('Player.php');
 $DB_Connection = new DBAccess();
 if(isset($_REQUEST['name'])) {
-    $DB_Connection->getPlayer($_REQUEST['name']);
+    $player = new Player($_REQUEST['name']);
+    $player->lookUpPlayer($DB_Connection);
 } else {
-    $DB_Connection->getAll();
+    echo "Search";
+//    $DB_Connection->getAll();
 }
 ?>
 <html>
@@ -27,8 +30,8 @@ if(isset($_REQUEST['name'])) {
             </h1>
         </div>
         <div>
-            <form id="search-form" name="player-search">
-                <input type="text" id="search-box" autocomplete="off">
+            <form id="search-form" action="./" method="GET">
+                <input type="text" name="name" id="search-box" autocomplete="off">
                 <input type="submit" value="Search!">
             </form>
         </div>
