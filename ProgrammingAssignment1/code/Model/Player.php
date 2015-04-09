@@ -18,6 +18,7 @@ class Player {
     function __construct($name){
         $this->name_array = explode(' ', $name);
         $this->toString = $name;
+        echo $this->toString;
     }
 
     public function __toString(){
@@ -85,7 +86,7 @@ class Player {
             // and the current word
             $name = $result['PlayerName']; //So We Don't have to modify original version when replacing punctuation
             //calculates levenshtein distance ignoring common punctuation
-            $levenshtein_length = levenshtein($this->__toString(), str_replace(array (',', '.', ';', ':', '&', '!', '?'), '',  $name));
+            $levenshtein_length = levenshtein($this->__toString(), str_replace(array (',', '.', ';', ':', '&', '!', '?', '-'), '',  $name));
             // check for an exact match
             if ($levenshtein_length == 0) {
 
