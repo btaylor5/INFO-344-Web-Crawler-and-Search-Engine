@@ -12,7 +12,7 @@ include_once('Player.php');
 $DB_Connection = new DBAccess();
 if(isset($_REQUEST['name'])) {
     $player = new Player($_REQUEST['name']);
-    $player->lookUpPlayer($DB_Connection);
+    $player->searchLevenshtein($DB_Connection);
 } else {
     echo "Search";
 //    $DB_Connection->getAll();
