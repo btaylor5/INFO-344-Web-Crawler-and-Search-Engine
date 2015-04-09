@@ -15,9 +15,6 @@ $DB_Connection = new DBAccess();
 if(isset($_REQUEST['name'])) {
     $player = new Search($_REQUEST['name']);
     $search = $player->searchLevenshtein($DB_Connection);
-} else {
-    echo "Search";
-//    $DB_Connection->getAll();
 }
 
 include_once('./code/View/footer.html');

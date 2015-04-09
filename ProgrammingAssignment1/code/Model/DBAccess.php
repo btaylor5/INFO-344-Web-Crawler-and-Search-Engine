@@ -17,8 +17,8 @@ class DBAccess {
             $this->connection->setAttribute( PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
         } catch ( PDOException $e ) {
             echo "Error Connecting with the Database";
-            echo phpinfo();
-            file_put_contents( 'DB_Error_Log.txt', $e->getMessage() . "\n", FILE_APPEND);
+            echo $e->getMessage();
+            file_put_contents( './DB_Error_Log.txt', $e->getMessage() . "\n", FILE_APPEND);
         }
     }
 
