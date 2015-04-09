@@ -16,9 +16,9 @@ class Player {
 //TODO cut out commas
 
     function __construct($name){
+        $name = trim($name);
         $this->name_array = explode(' ', $name);
         $this->toString = $name;
-        echo $this->toString;
     }
 
     public function __toString(){
@@ -56,7 +56,7 @@ class Player {
             $sql = "
             SELECT *
             FROM nbaStats
-            WHERE PlayerName
+            WHERE replace(replace(PlayerName, '.', ''), '-', '')
             LIKE ?
             ";
 
@@ -85,8 +85,9 @@ class Player {
             // calculate the distance between the input word,
             // and the current word
             $name = $result['PlayerName']; //So We Don't have to modify original version when replacing punctuation
+            $name = str_replace(array (',', '.', ';', ':', '&', '!', '?', '-'), '',  $name);
             //calculates levenshtein distance ignoring common punctuation
-            $levenshtein_length = levenshtein($this->__toString(), str_replace(array (',', '.', ';', ':', '&', '!', '?', '-'), '',  $name));
+            $levenshtein_length = levenshtein($this->__toString(), $name);
             // check for an exact match
             if ($levenshtein_length == 0) {
 
