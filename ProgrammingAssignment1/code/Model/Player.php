@@ -32,25 +32,7 @@ class Player {
         return $this->toString;
     }
 
-    function lookUpPlayer($DB_Connection){
-        $sql = "
-            SELECT *
-            FROM nbaStats
-            WHERE PlayerName
-            LIKE ?
-            OR PlayerName
-            LIKE ?
-            ";
-
-        $stmt = $DB_Connection->getConnection()->prepare($sql);
-        $stmt->execute(array( '%' . $this->FirstName . '%',  '%' . $this->LastName . '%'));
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            echo $row['PlayerName'] . "</br>";
-        }
-    }
-
-    function searchLevenshtein($DB_Connection) {
-        $closest_matches = array();
+    function lookUpPlayer($closest_matches, $DB_Connection){
         $results = array();
         foreach($this->name_array as $segment) {
             $sql = "
@@ -69,9 +51,14 @@ class Player {
                 }
             }
         }
+        return $results;
+    }
 
+    function searchLevenshtein($DB_Connection) {
+        $closest_matches = array();
+        $results = $this->lookUpPlayer($closest_matches, $DB_Connection);
         if(sizeof($results) == 0) {
-            $DB_Connection->getConnection()->prepare("SELECT * FROM nbaStats");
+            $stmt = $DB_Connection->getConnection()->prepare("SELECT * FROM nbaStats");
             $stmt->execute();
             $results = $stmt->fetchAll();
         }
