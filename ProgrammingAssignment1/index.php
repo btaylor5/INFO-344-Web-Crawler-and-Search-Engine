@@ -8,11 +8,13 @@
 // TODO: REMOVE BEFORE FINALIZED
 error_reporting(E_ALL);
 include_once('./code/Model/DBAccess.php');
+include_once('./code/Model/Search.php');
 include_once('./code/Model/Player.php');
+
 $DB_Connection = new DBAccess();
 if(isset($_REQUEST['name'])) {
-    $player = new Player($_REQUEST['name']);
-    $player->searchLevenshtein($DB_Connection);
+    $player = new Search($_REQUEST['name']);
+    $search = $player->searchLevenshtein($DB_Connection);
 } else {
     echo "Search";
 //    $DB_Connection->getAll();
@@ -20,8 +22,8 @@ if(isset($_REQUEST['name'])) {
 
 include_once('./code/View/footer.html');
 
-include_once('./code/View/search.php');
+include_once('./code/View/Search_UI.php');
 
-include_once('./code/View/results.php');
+include_once('./code/View/Results_UI.php');
 
 include_once('./code/View/footer.html');

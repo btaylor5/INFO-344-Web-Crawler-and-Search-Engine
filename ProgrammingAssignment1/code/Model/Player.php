@@ -2,108 +2,322 @@
 /**
  * Created by IntelliJ IDEA.
  * User: btaylor5
- * Date: 4/1/15
- * Time: 12:03 PM
+ * Date: 4/9/15
+ * Time: 11:09 AM
  */
-error_reporting(E_ALL);
+
 class Player {
+    public $PlayerID;
+    private $PlayerName;
+    private $PlayerPosition;
+    private $TeamAbbName;
+    private $TeamID;
+    private $GP;
+    private $MIN;
+    private $FGM;
+    private $FGA;
+    private $FGP;
+    private $TPM;
+    private $TPA;
+    private $TPP;
+    private $FTM;
+    private $FTA;
+    private $FTP;
+    private $RBO;
+    private $RBD;
+    private $RBT;
+    private $AST;
+    private $TO;
+    private $STL;
+    private $BLK;
+    private $PF;
+    private $PPG;
+    private $TR;
+    private $PlayerPhoto;
 
-    private $FirstName;
-    private $LastName;
-    private $name_array;
-    private $toString;
-
-//TODO cut out commas
-
-    function __construct($name){
-        $name = trim($name);
-        $this->name_array = explode(' ', $name);
-        $this->toString = $name;
+    /**
+     * Player constructor.
+     * @arg $array( 'PlayerID',
+     *              'PlayerName',
+     *              'PlayerPosition',
+     *              'TeamAbbName',
+     *              'TeamID',
+     *              'GP',
+     *              'MIN',
+     *              'FGA',
+     *              'TPM',
+     *              'TPA',
+     *              'TPP',
+     *              'FTM',
+     *              'FTA',
+     *              'FTP',
+     *              'RBO',
+     *              'RBD',
+     *              'RBT',
+     *              'AST',
+     *              'TO',
+     *              'STL',
+     *              'BLK',
+     *              'PF',
+     *              'PPG',
+     *              'TR'
+     *            )
+     **/
+    public function __construct($array)
+    {
+        $this->PlayerID = $array[0];
+        $this->PlayerName = $array[1];
+        $this->PlayerPosition = $array[2];
+        $this->TeamAbbName = $array[3];
+        $this->TeamID = $array[4];
+        $this->GP = $array[5];
+        $this->MIN = $array[6];
+        $this->FGM = $array[7];
+        $this->FGA = $array[8];
+        $this->FGP = $array[9];
+        $this->TPM = $array[10];
+        $this->TPA = $array[11];
+        $this->TPP = $array[12];
+        $this->FTM = $array[13];
+        $this->FTA = $array[14];
+        $this->FTP = $array[15];
+        $this->RBO = $array[16];
+        $this->RBD = $array[17];
+        $this->RBT = $array[18];
+        $this->AST = $array[19];
+        $this->TO = $array[20];
+        $this->STL = $array[21];
+        $this->BLK = $array[22];
+        $this->PF = $array[23];
+        $this->PPG = $array[24];
+        $this->TR = $array[25];
     }
 
-    public function __toString(){
-        $builder = '';
-//        if (isset($this->name_array[0])) {
-//            $builder = $this->name_array[0];
-//        }
-//        for ($i = 1; $i < sizeof($this->name_array); $i++) {
-//            $builder = $builder . ' ' . $this->name_array[$i];
-//        }
-        return $this->toString;
+    public function __toString() {
+        return $this->PlayerName;
     }
 
-    function lookUpPlayer($closest_matches, $DB_Connection){
-        $results = array();
-        foreach($this->name_array as $segment) {
-            $sql = "
-            SELECT *
-            FROM nbaStats
-            WHERE replace(replace(PlayerName, '.', ''), '-', '')
-            LIKE ?
-            ";
-
-            $stmt = $DB_Connection->getConnection()->prepare($sql);
-            $stmt->execute(array( '%' . $segment . '%'));
-            $results = array_merge($results, $stmt->fetchAll());
-            foreach ($results as $player) {
-                if (! in_array($player['PlayerName'], $closest_matches)) {
-                    array_push($closest_matches, $player['PlayerName']);
-                }
-            }
-        }
-        return $results;
+    /**
+     * @return mixed
+     */
+    public function getTR()
+    {
+        return $this->TR;
     }
 
-    function searchLevenshtein($DB_Connection) {
-        $closest_matches = array();
-        $results = $this->lookUpPlayer($closest_matches, $DB_Connection);
-        if(sizeof($results) == 0) {
-            $stmt = $DB_Connection->getConnection()->prepare("SELECT * FROM nbaStats");
-            $stmt->execute();
-            $results = $stmt->fetchAll();
-        }
-        // no shortest distance found, yet
-        $shortest = -1;
-
-        $closest = '';
-        // loop through words to find the closest
-        foreach ($results as $result) {
-
-            // calculate the distance between the input word,
-            // and the current word
-            $name = $result['PlayerName']; //So We Don't have to modify original version when replacing punctuation
-            $name = str_replace(array (',', '.', ';', ':', '&', '!', '?', '-'), '',  $name);
-            //calculates levenshtein distance ignoring common punctuation
-            $levenshtein_length = levenshtein($this->__toString(), $name);
-            // check for an exact match
-            if ($levenshtein_length == 0) {
-
-                // closest word is this one (exact match)
-                $closest = $result['PlayerName'];
-                $shortest = 0;
-
-                // break out of the loop; we've found an exact match
-                break;
-            }
-
-            // if this distance is less than the next found shortest
-            // distance, OR if a next shortest word has not yet been found
-            if ($levenshtein_length <= $shortest || $shortest < 0) {
-                // set the closest match, and shortest distance
-                if(!in_array($result['PlayerName'], $closest_matches)) {
-                    array_push($closest_matches, $result['PlayerName']);
-                }
-                $shortest = $levenshtein_length;
-            }
-        }
-        echo "Input word: " . $this->__toString() . "<br />";
-        if ($shortest == 0) {
-            echo "Exact match found: " . $closest . "<br />";
-        } else {
-            while(sizeof($closest_matches) > 0) {
-                echo array_pop($closest_matches) . "<br />";
-            }
-        }
+    /**
+     * @return mixed
+     */
+    public function getPlayerID()
+    {
+        return $this->PlayerID;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getPlayerName()
+    {
+        return $this->PlayerName;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPlayerPosition()
+    {
+        return $this->PlayerPosition;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTeamAbbName()
+    {
+        return $this->TeamAbbName;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTeamID()
+    {
+        return $this->TeamID;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getGP()
+    {
+        return $this->GP;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMIN()
+    {
+        return $this->MIN;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFGM()
+    {
+        return $this->FGM;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFGA()
+    {
+        return $this->FGA;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFGP()
+    {
+        return $this->FGP;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTPM()
+    {
+        return $this->TPM;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTPA()
+    {
+        return $this->TPA;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTPP()
+    {
+        return $this->TPP;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFTM()
+    {
+        return $this->FTM;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFTA()
+    {
+        return $this->FTA;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFTP()
+    {
+        return $this->FTP;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRBO()
+    {
+        return $this->RBO;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRBD()
+    {
+        return $this->RBD;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRBT()
+    {
+        return $this->RBT;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getAST()
+    {
+        return $this->AST;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTO()
+    {
+        return $this->TO;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSTL()
+    {
+        return $this->STL;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getBLK()
+    {
+        return $this->BLK;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPF()
+    {
+        return $this->PF;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPPG()
+    {
+        return $this->PPG;
+    }
+
+    public function asJSON() {
+
+    }
+
+    public function setPhoto($image) {
+        $this->PlayerPhoto = $image;
+    }
+
+    public function findImage() {
+
+    }
+
+
+
 
 }
