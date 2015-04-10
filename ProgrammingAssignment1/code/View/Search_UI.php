@@ -5,7 +5,7 @@
             <div class="form-group">
                 <input type="text" class="form-control" id="search-box" placeholder="Player Name...">
             </div>
-            <button class="btn btn-default search-button">Search!</button>
+            <button class="btn btn-primary search-button">Search!</button>
         </div>
     </div>
 </div>

@@ -6,6 +6,6 @@
  * Time: 12:28 AM
  */
 ?>
-<div id="results" class="container">
+<div id="results" class="">
 
 </div>
