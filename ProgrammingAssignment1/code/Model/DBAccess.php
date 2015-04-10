@@ -25,25 +25,4 @@ class DBAccess {
     function getConnection() {
         return $this->connection;
     }
-
-    function getAll() {
-        $query = $this->connection->prepare("SELECT * FROM nbaStats");
-        $query->execute();
-
-        $this->printAllOfColumn($query, 'PlayerName');
-
-    }
-
-    function getPlayer($name) {
-        $query = $this->connection->prepare("SELECT * FROM nbaStats WHERE PlayerName = ?");
-        $query->execute(array ($name));
-        $this->printAllOfColumn($query, 'PlayerName');
-    }
-
-    static function printAllOfColumn($query, $column) {
-        while ($row = $query->fetch(PDO::FETCH_ASSOC)) {
-            echo $row[$column] . "</br>";
-        }
-    }
-
 }
