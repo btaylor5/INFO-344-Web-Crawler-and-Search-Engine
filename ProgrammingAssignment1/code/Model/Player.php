@@ -10,8 +10,7 @@ class Player {
 
     private $PlayerPhoto;
     private $arrayRepresentation;
-    private $FirstName;
-    private $LastName;
+    private $name;
 
     /**
      * Player constructor.
@@ -44,14 +43,13 @@ class Player {
     public function __construct($array)
     {
         $this->arrayRepresentation = $array;
-        $name = explode(' ', $array[1]);
-        $this->FirstName = $name[0];
-        $this->LastName = $name[1];
+        $this->name = $array[1];
+        $this->findImageURL();
     }
 
     // sets the players PlayerPhoto
     public function setPhoto($url) {
-        $this->PlayerPhoto = $this->findImage();
+        $this->arrayRepresentation['ImageURL'] = $url;
     }
 
     public function getPhoto() {
@@ -62,8 +60,8 @@ class Player {
 //    http://i.cdn.turner.com/nba/nba/.element/img/2.0/sect/statscube/players/large/chris_copeland.png
     public function findImageURL() {
         $url = 'http://i.cdn.turner.com/nba/nba/.element/img/2.0/sect/statscube/players/large/';
-        $url = $url . $this->FirstName . '_' . $this->LastName . '.png';
-        return $url;
+        $convert = str_replace(' ', '_', $this->name);
+        $this->arrayRepresentation['ImageURL'] = $url . $convert . '.png';
     }
 
     public function arrayRepresentation() {

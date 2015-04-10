@@ -33,12 +33,13 @@
             var baseHTML = "" +
             "<div class='player'>" +
             "   <div>" +
-            "      <img class='profile-pic' src='src/generic-avatar-390x390.png'>" +
+            "      <img class='profile-pic' " +
+            " src='" +  data[i].ImageURL + "' >" +
             "       <h2 class='PlayerName'>" +
                         data[i].PlayerName +
             "       </h2>"+
             "       <table class='table table-bordered stat-table'>" +
-            "       <thead>" +
+            "       <thead class='bg-primary'>" +
             "            <tr>" +
             "                <th>GP</th>" +
             "                <th>FGP</th>" +
