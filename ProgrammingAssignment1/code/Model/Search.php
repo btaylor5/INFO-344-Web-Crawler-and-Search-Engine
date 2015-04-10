@@ -63,8 +63,7 @@ class Search {
 
             // calculate the distance between the input word,
             // and the current word
-            $name = $result['PlayerName']; //So We Don't have to modify original version when replacing punctuation
-            $name = str_replace(array (',', '.', ';', ':', '&', '!', '?', '-'), '',  $name);
+            $name = str_replace(array (',', '.', ';', ':', '&', '!', '?', '-'), '', $result['PlayerName']);
             //calculates levenshtein distance ignoring common punctuation
             $levenshtein_length = levenshtein($this->__toString(), $name);
             // check for an exact match
@@ -90,7 +89,6 @@ class Search {
         $playerStack = new PlayerStack();
         while(sizeof($closest_matches) > 0) {
             $player = new Player(array_pop($closest_matches));
-            echo $player->__toString() . "<br />";
             $playerStack->push($player);
         }
         return $playerStack;

@@ -7,7 +7,7 @@
  */
 ?>
 <div id="results">
-    <div class="player">
+<pre id="test-output">
 
-    </div>
+</pre>
 </div>

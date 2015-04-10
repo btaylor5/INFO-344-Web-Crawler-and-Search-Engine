@@ -5,22 +5,28 @@
  * Date: 4/1/15
  * Time: 11:07 AM
  */
+
+include_once('./code/View/header.php');
 // TODO: REMOVE BEFORE FINALIZED
-error_reporting(E_ALL);
-include_once('./code/Model/DBAccess.php');
-include_once('./code/Model/Search.php');
-include_once('./code/Model/Player.php');
-
-$DB_Connection = new DBAccess();
-if(isset($_REQUEST['name'])) {
-    $player = new Search($_REQUEST['name']);
-    $search = $player->searchLevenshtein($DB_Connection);
-}
-
-include_once('./code/View/footer.html');
-
 include_once('./code/View/Search_UI.php');
-
 include_once('./code/View/Results_UI.php');
+include_once('./code/View/footer.php');
 
-include_once('./code/View/footer.html');
+//
+//include_once('./code/Model/PlayerStack.php');
+//error_reporting(E_ALL);
+//include_once('./code/Model/DBAccess.php');
+//include_once('./code/Model/Search.php');
+//include_once('./code/Model/Player.php');
+//$DB_Connection = new DBAccess();
+//if(isset($_REQUEST['name'])) {
+//    $player = new Search($_REQUEST['name']);
+//    $playerStack = $player->searchLevenshtein($DB_Connection);
+//    $players = $playerStack->asArray();
+//    foreach($players as $player) {
+//        echo json_encode($player->arrayRepresentation());
+//    }
+//
+//} else {
+//    echo "{ERROR}";
+//}

@@ -15,23 +15,27 @@ class PlayerStack {
         $this->stack = array();
     }
 
-    function __toString() {
-        return $this->stack[0] . '';
-    }
-
     function push($value) {
         $this->stack[] = $value;
+    }
+
+    function __toString() {
+        $json = '';
+        foreach ($this->stack as $player) {
+            $json = $json . $player->__toString();
+        }
+        return $json;
     }
 
     function pop() {
         array_pop($this->stack);
     }
 
-    private function getStack() {
-        return $this->stack;
-    }
-
     function size() {
         return sizeof($this->stack);
+    }
+
+    function asArray() {
+        return $this->stack;
     }
 }
