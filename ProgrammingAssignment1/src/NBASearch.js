@@ -8,21 +8,60 @@
 
 
     function search() {
+
         $.ajax({
             type: "POST",
-            url: './code/Controller/Requests.php?name=',
-            data: $('#search-box').val(),
+            url: './code/Controller/Requests.php',
+            data: 'name=' + $('#search-box').val(),
             success: function(data) {
                 console.log("Success");
-                $('#test-output').text(data[0].PlayerName);
-                console.log(JSON.stringify(data));
+                printResults(data);
             },
             error: function(message) {
                 console.log("Failure");
-                $('#test-output').text($.parseJSON(message));
+                $('#results').text($.parseJSON(message));
             },
             dataType: 'JSON'
         });
+    }
+
+    function printResults(data) {
+        for(var i = 0; i < data.length; i++) {
+            var baseHTML = "" +
+            "<div class='player'>" +
+            "   <div class='container'>" +
+            "      <img class='profile-pic' src='src/generic-avatar-390x390.png' />" +
+            "       <h2 class='PlayerName'>" +
+                        data[i].PlayerName +
+            "       </h2>"+
+            "       <table class='table table-bordered'>" +
+            "       <thead>" +
+            "            <tr>" +
+            "                <th>GP</th>" +
+            "                <th>FGP</th>" +
+            "                <th>TPP</th>" +
+            "                <th>FTP</th>" +
+            "                <th>PPG</th>" +
+            "           </tr>"+
+            "        </thead>" +
+            "        <tbody>" +
+                        "<tr class='stat'>" + data[i].GP +
+                        "</tr>" +
+                        "<tr class='stat'>" + data[i].FGP +
+                        "</tr>" +
+                        "<tr class='stat'>" + data[i].TPP +
+                        "</tr>" +
+                        "<tr class='stat'>" + data[i].FTP +
+                        "</tr>" +
+                        "<tr class='stat'>" + data[i].PPG +
+            "           </tr>" +
+            "       </tbody>" +
+            "       </table>" +
+            "   </div>" +
+            "</div>";
+
+            $('#results').append(baseHTML);
+        }
     }
 
 

@@ -6,13 +6,58 @@
     text-align: center;
 }
 
+.brand:hover {
+    color:white;
+}
+
 .search-box {
     margin-top: 5em;
     margin-left: auto;
     margin-right: auto;
-    width: 50%;
+    padding-top: 10px;
+    width: 90%;
 }
 
 .search-button {
     text-align: center;
+}
+
+.search-container {
+    width: 75%;
+    margin:auto;
+    text-align: center;
+}
+
+#logo {
+    width: 30%;
+    padding: 0.3em;
+    margin-bottom: 10px;
+    vertical-align: middle;
+}
+
+body {
+    background-size: auto;
+    background-image: url('nba_teams_wallpaper.jpg');
+    background-repeat: repeat;
+
+}
+
+.player {
+    height: 200px;
+    width: 75%;
+    margin: auto;
+    color: Black;
+    border-radius: 5px;
+    background-color: #eee;
+    margin-bottom: 1em;
+}
+
+.profile-pic {
+    margin-top: 20px;
+    width: 100px;
+    height: 100px;
+}
+
+.PlayerName {
+    font-size: 18pt;
 }

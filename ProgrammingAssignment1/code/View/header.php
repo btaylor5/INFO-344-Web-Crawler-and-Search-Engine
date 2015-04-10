@@ -17,12 +17,4 @@
         <link rel="stylesheet" href="src/style.css">
 
     </head>
-    <body>
-<!--    <nav class="navbar navbar-inverse navbar-fixed-top">-->
-<!--        <div class="container">-->
-<!--            <div class="navbar-header">-->
-<!--                <a class="navbar-brand" href="./">NBA Player Search</a>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </nav>-->
-    <div class="container">
+    <body class="container">

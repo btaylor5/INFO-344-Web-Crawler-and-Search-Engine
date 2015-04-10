@@ -6,8 +6,6 @@
  * Time: 12:28 AM
  */
 ?>
-<div id="results">
-<pre id="test-output">
+<div id="results" class="container">
 
-</pre>
 </div>

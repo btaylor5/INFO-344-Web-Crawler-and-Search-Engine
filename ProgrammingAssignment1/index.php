@@ -11,7 +11,7 @@ include_once('./code/View/header.php');
 include_once('./code/View/Search_UI.php');
 include_once('./code/View/Results_UI.php');
 include_once('./code/View/footer.php');
-
+//
 //
 //include_once('./code/Model/PlayerStack.php');
 //error_reporting(E_ALL);
@@ -23,9 +23,11 @@ include_once('./code/View/footer.php');
 //    $player = new Search($_REQUEST['name']);
 //    $playerStack = $player->searchLevenshtein($DB_Connection);
 //    $players = $playerStack->asArray();
+//    $results = array();
 //    foreach($players as $player) {
-//        echo json_encode($player->arrayRepresentation());
+//        $results[] = $player->arrayRepresentation();
 //    }
+//    echo json_encode($results);
 //
 //} else {
 //    echo "{ERROR}";
