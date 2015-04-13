@@ -11,6 +11,7 @@ class Player {
     private $PlayerPhoto;
     private $arrayRepresentation;
     private $name;
+    private $id;
 
     /**
      * Player constructor.
@@ -43,6 +44,7 @@ class Player {
     public function __construct($array)
     {
         $this->arrayRepresentation = $array;
+        $this->id = $array[0];
         $this->name = $array[1];
         $this->findImageURL();
     }
@@ -59,13 +61,34 @@ class Player {
     // return the url of this players image
 //    http://i.cdn.turner.com/nba/nba/.element/img/2.0/sect/statscube/players/large/chris_copeland.png
     public function findImageURL() {
-        $url = 'http://i.cdn.turner.com/nba/nba/.element/img/2.0/sect/statscube/players/large/';
-        $convert = str_replace(' ', '_', $this->name);
-        $this->arrayRepresentation['ImageURL'] = $url . $convert . '.png';
+        $baseURL = 'http://i.cdn.turner.com/nba/nba/.element/img/2.0/sect/statscube/players/large/';
+        $fileName = str_replace(' ', '_', $this->name);
+        $url = $baseURL . $fileName . '.png';
+
+        $curl = curl_init($url);
+        curl_setopt($curl,  CURLOPT_RETURNTRANSFER, TRUE);
+        curl_exec($curl);
+
+        /* Check for 404 (file not found). */
+        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        if($httpCode == 404) {
+            $this->arrayRepresentation['ImageURL'] = 'src/generic-avatar-390x390.png';
+        } else {
+            $this->arrayRepresentation['ImageURL'] = $url;
+        }
+        curl_close($curl);
     }
 
     public function arrayRepresentation() {
         return $this->arrayRepresentation;
+    }
+
+    public function __toString() {
+        return $this->name;
+    }
+
+    public function getID() {
+        return $this->id;
     }
 
 

@@ -11,6 +11,8 @@ error_reporting(E_ALL);
 include_once('../Model/DBAccess.php');
 include_once('../Model/Search.php');
 include_once('../Model/Player.php');
+
+
 $DB_Connection = new DBAccess();
 if(isset($_REQUEST['name'])) {
     $player = new Search($_REQUEST['name']);

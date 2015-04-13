@@ -25,11 +25,21 @@ class Search {
     }
 
 
+    function in_player_array($player, $array) {
+        $id = $player[0];
+        foreach ($array as $other_player) {
+            if($other_player[0] === $id) {
+                return TRUE;
+            }
+        }
+        return FALSE;
+    }
+
     /**
      * $closest_matches = an array that holds possible results already,
      * will be included in the returned array
      *
-     * To be used to find NBAPlayers.
+     * To be used tPlayero find NBAPlayers.
      * Assumes DBName is nbaStats and follows the structure of this CSV file
      * (http://uwinfo344.chunkaiw.com/files/2012-2013.nba.stats.csv)
      *
@@ -40,6 +50,7 @@ class Search {
      * @param $DB_Connection
      * @return array
      */
+
     function lookUpPlayer($closest_matches, $DB_Connection){
         $results = array();
         foreach($this->name_array as $segment) {
@@ -53,13 +64,13 @@ class Search {
             $stmt = $DB_Connection->getConnection()->prepare($sql);
             $stmt->execute(array( '%' . $segment . '%'));
             $results = array_merge($results, $stmt->fetchAll());
-            foreach ($results as $player) {
-                if (! in_array($player , $closest_matches)) {
-                    array_push($closest_matches, $player);
+            for ($i = 0; $i < sizeof($results); $i++) {
+                if (!$this->in_player_array($results[$i], $closest_matches)) {
+                    $closest_matches[] = $results[$i];
                 }
             }
         }
-        return $results;
+        return $closest_matches;
     }
 
 
@@ -77,19 +88,19 @@ class Search {
         $closest_matches = array();
 
         //Assume user got one name right
-        $results = $this->lookUpPlayer($closest_matches, $DB_Connection);
-        if(sizeof($results) == 0) {
+        $closest_matches = $this->lookUpPlayer($closest_matches, $DB_Connection);
+        if(sizeof($closest_matches) == 0) {
             // user typed in something with no results
             // Brute force to return some possible results
             $stmt = $DB_Connection->getConnection()->prepare("SELECT * FROM nbaStats");
             $stmt->execute();
-            $results = $stmt->fetchAll();
+            $closest_matches = $stmt->fetchAll();
         }
 
         $shortest = -1; //Don't know shortest yet
 
         // loop through words to find the closest match to the search
-        foreach ($results as $result) {
+        foreach ($closest_matches as $result) {
 
             //remove punctuation from search
             $name = str_replace(array (',', '.', ';', ':', '&', '!', '?', '-'), '', $result['PlayerName']);
@@ -100,13 +111,15 @@ class Search {
 
             //exact match with search
             if ($levenshtein_length == 0) {
-                array_push($closest_matches, $result);
-
+                if(!$this->in_player_array($result, $closest_matches)) {
+                    //Add to search results
+                    array_push($closest_matches, $result);
+                }
                 break;
             }
 
             if ($levenshtein_length <= $shortest || $shortest < 0) {
-                if(!in_array($result['PlayerName'], $closest_matches)) {
+                if(!$this->in_player_array($result, $closest_matches)) {
                     //Add to search results
                     array_push($closest_matches, $result);
                 }

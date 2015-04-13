@@ -18,7 +18,7 @@
             },
             error: function(message) {
                 console.log("Failure");
-                $('#results').text($.parseJSON(message));
+                $("#results").text('Sorry! Try Again');
             },
             beforeSend: function() {
                 console.log('loading..');

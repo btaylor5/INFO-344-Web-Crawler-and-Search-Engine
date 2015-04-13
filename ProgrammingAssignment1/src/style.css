@@ -37,9 +37,11 @@
 }
 
 body {
-    background-size: auto;
-    background-image: url('nba_teams_wallpaper.jpg');
-    background-repeat: repeat;
+    /*background-size: auto;*/
+    /*background-image: url('nba_teams_wallpaper.jpg');*/
+    background-image: url('basket_ball_court.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
 
 }
 
