@@ -11,11 +11,14 @@ class Search {
 
     private $name_array;
     private $toString;
+    private $name;
 
 //TODO cut out commas
 
     function __construct($name){
         $name = trim($name);
+        //TODO MAke Regex of at least 2 chars (DJ)
+//        $this->name_array = preg_split("/^[a-zA-Z]{2,}$/", $name);
         $this->name_array = explode(' ', $name);
         $this->toString = $name;
     }
@@ -54,19 +57,21 @@ class Search {
     function lookUpPlayer($closest_matches, $DB_Connection){
         $results = array();
         foreach($this->name_array as $segment) {
-            $sql = "
-            SELECT *
-            FROM nbaStats
-            WHERE replace(replace(PlayerName, '.', ''), '-', '')
-            LIKE ?
-            ";
+            if(strlen($segment) >= 2) {
+                $sql = "
+                SELECT *
+                FROM nbaStats
+                WHERE replace(replace(PlayerName, '.', ''), '-', '')
+                LIKE ?
+                ";
 
-            $stmt = $DB_Connection->getConnection()->prepare($sql);
-            $stmt->execute(array( '%' . $segment . '%'));
-            $results = array_merge($results, $stmt->fetchAll());
-            for ($i = 0; $i < sizeof($results); $i++) {
-                if (!$this->in_player_array($results[$i], $closest_matches)) {
-                    $closest_matches[] = $results[$i];
+                $stmt = $DB_Connection->getConnection()->prepare($sql);
+                $stmt->execute(array('%' . $segment . '%'));
+                $results = array_merge($results, $stmt->fetchAll());
+                for ($i = 0; $i < sizeof($results); $i++) {
+                    if (!$this->in_player_array($results[$i], $closest_matches)) {
+                        $closest_matches[] = $results[$i];
+                    }
                 }
             }
         }
@@ -92,8 +97,8 @@ class Search {
         if(sizeof($closest_matches) == 0) {
             // user typed in something with no results
             // Brute force to return some possible results
-            $stmt = $DB_Connection->getConnection()->prepare("SELECT * FROM nbaStats");
-            $stmt->execute();
+            $stmt = $DB_Connection->getConnection()->prepare("SELECT * FROM nbaStats WHERE PlayerName SOUNDS LIKE ?");
+            $stmt->execute(array ('%' . $this->toString . '%'));
             $closest_matches = $stmt->fetchAll();
         }
 

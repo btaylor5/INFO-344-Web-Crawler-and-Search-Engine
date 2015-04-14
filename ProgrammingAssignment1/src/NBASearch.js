@@ -3,6 +3,7 @@
     $(document).ready(function() {
         $('.search-button').click(search);
         console.log("Document Ready And Loaded");
+
     });
 
 
@@ -12,13 +13,22 @@
             url: './code/Controller/Requests.php',
             data: 'name=' + $('#search-box').val(),
             success: function(data) {
-                $('#results').empty();
                 console.log("Success");
                 printResults(data);
             },
             error: function(message) {
                 console.log("Failure");
-                $("#results").text('Sorry! Try Again');
+                var baseHTML = "" +
+                    "<div class='No-Results'>" +
+                    "   <div>" +
+                    "       <h2>" +
+                    "        Sorry! Your Search Returned No Results" +
+                    "       </h2>" +
+                    "   </div>" +
+                    "</div>";
+                hideLoad();
+                $("#results").append(baseHTML);
+
             },
             beforeSend: function() {
                 console.log('loading..');
@@ -28,13 +38,18 @@
         });
     }
 
+    function hideLoad() {
+        $('#results').empty();
+    }
+
     function printResults(data) {
+        hideLoad();
         for(var i = 0; i < data.length; i++) {
             var baseHTML = "" +
             "<div class='player'>" +
             "   <div>" +
             "      <img class='profile-pic' " +
-            " src='" +  data[i].ImageURL + "' >" +
+            " src='" +  data[i].ImageURL + "' onError='this'>" +
             "       <h2 class='PlayerName'>" +
                         data[i].PlayerName +
             "       </h2>"+
@@ -67,12 +82,17 @@
             "</div>";
 
             $('#results').append(baseHTML);
+
+            $('.profile-pic').one('error', function() {
+                this.src = 'src/generic-avatar-390x390.png';
+            });
         }
     }
 
     function showLoading() {
         $('#results').html('<img class="loading" src="src/loading-blue.gif" />');
     }
+
 
 
 })();

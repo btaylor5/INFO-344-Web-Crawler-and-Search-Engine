@@ -65,18 +65,19 @@ class Player {
         $fileName = str_replace(' ', '_', $this->name);
         $url = $baseURL . $fileName . '.png';
 
-        $curl = curl_init($url);
-        curl_setopt($curl,  CURLOPT_RETURNTRANSFER, TRUE);
-        curl_exec($curl);
 
-        /* Check for 404 (file not found). */
-        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-        if($httpCode == 404) {
-            $this->arrayRepresentation['ImageURL'] = 'src/generic-avatar-390x390.png';
-        } else {
+//        $curl = curl_init($url);
+//        curl_setopt($curl,  CURLOPT_RETURNTRANSFER, TRUE);
+//        curl_exec($curl);
+
+//        /* Check for 404 (file not found). */
+//        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+//        if($httpCode == 404) {
+//            $this->arrayRepresentation['ImageURL'] = 'src/generic-avatar-390x390.png';
+//        } else {
             $this->arrayRepresentation['ImageURL'] = $url;
-        }
-        curl_close($curl);
+//        }
+//        curl_close($curl);
     }
 
     public function arrayRepresentation() {

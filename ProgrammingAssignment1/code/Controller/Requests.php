@@ -19,11 +19,14 @@ if(isset($_REQUEST['name'])) {
     $playerStack = $player->searchLevenshtein($DB_Connection);
     $players = $playerStack->asArray();
     $results = array();
-    foreach($players as $player) {
-        $results[] = $player->arrayRepresentation();
+    if (sizeof($players) > 0) {
+        foreach($players as $player) {
+            $results[] = $player->arrayRepresentation();
+        }
+        echo json_encode(array_reverse($results));
+    } else {
+        echo "No Results, Try Refining your search!";
     }
-    echo json_encode($results);
-
 } else {
     echo "{ERROR}";
 }
