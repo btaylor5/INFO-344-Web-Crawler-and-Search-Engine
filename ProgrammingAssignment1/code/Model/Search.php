@@ -4,34 +4,38 @@
  * User: btaylor5
  * Date: 4/1/15
  * Time: 12:03 PM
+ *
+ * Search includes the necessary methods to search for players
  */
-error_reporting(E_ALL);
 include_once('PlayerStack.php');
 class Search {
 
     private $name_array;
-    private $toString;
     private $name;
 
-//TODO cut out commas
 
-    function __construct($name){
+    // takes in the search query and prepares it for use
+    function __construct($name)
+    {
         $name = trim($name);
-        //TODO MAke Regex of at least 2 chars (DJ)
-//        $this->name_array = preg_split("/^[a-zA-Z]{2,}$/", $name);
         $this->name_array = explode(' ', $name);
-        $this->toString = $name;
+        $this->name = $name;
     }
 
-    public function __toString(){
-        return $this->toString;
+    // returns the Name being searched
+    public function __toString()
+    {
+        return $this->name;
     }
 
-
-    function in_player_array($player, $array) {
+    // returns whether a player is already present in an array
+    function in_player_array($player, $array)
+    {
         $id = $player[0];
-        foreach ($array as $other_player) {
-            if($other_player[0] === $id) {
+        foreach ($array as $other_player)
+        {
+            if($other_player[0] === $id)
+            {
                 return TRUE;
             }
         }
@@ -54,22 +58,27 @@ class Search {
      * @return array
      */
 
-    function lookUpPlayer($closest_matches, $DB_Connection){
+    function lookUpPlayer($closest_matches, $DB_Connection)
+    {
         $results = array();
-        foreach($this->name_array as $segment) {
-            if(strlen($segment) >= 2) {
+        foreach($this->name_array as $segment)
+        {
+            if(strlen($segment) >= 2) // prevents adding every name with a letter to the results list
+            {
                 $sql = "
                 SELECT *
                 FROM nbaStats
-                WHERE replace(replace(PlayerName, '.', ''), '-', '')
+                WHERE replace(replace(replace(PlayerName, '.', ''), '-', ''), ',', '')
                 LIKE ?
                 ";
 
                 $stmt = $DB_Connection->getConnection()->prepare($sql);
                 $stmt->execute(array('%' . $segment . '%'));
                 $results = array_merge($results, $stmt->fetchAll());
-                for ($i = 0; $i < sizeof($results); $i++) {
-                    if (!$this->in_player_array($results[$i], $closest_matches)) {
+                for ($i = 0; $i < sizeof($results); $i++)
+                {
+                    if (!$this->in_player_array($results[$i], $closest_matches))
+                    {
                         $closest_matches[] = $results[$i];
                     }
                 }
@@ -89,16 +98,18 @@ class Search {
      * @param $DB_Connection,
      * @return PlayerStack
      */
-    function searchLevenshtein($DB_Connection) {
+    function searchLevenshtein($DB_Connection)
+    {
         $closest_matches = array();
 
         //Assume user got one name right
         $closest_matches = $this->lookUpPlayer($closest_matches, $DB_Connection);
-        if(sizeof($closest_matches) == 0) {
+        if(sizeof($closest_matches) == 0)
+        {
             // user typed in something with no results
             // Brute force to return some possible results
             $stmt = $DB_Connection->getConnection()->prepare("SELECT * FROM nbaStats WHERE PlayerName SOUNDS LIKE ?");
-            $stmt->execute(array ('%' . $this->toString . '%'));
+            $stmt->execute(array ('%' . $this->name . '%'));
             $closest_matches = $stmt->fetchAll();
         }
 
