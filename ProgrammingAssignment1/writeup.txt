@@ -1,0 +1,3 @@
+Write up explaining how you
+implemented everything. Make sure to address
+each of the requirements, writeup.txt (~500 words)

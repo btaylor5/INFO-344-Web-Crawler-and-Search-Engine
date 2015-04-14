@@ -4,17 +4,21 @@
  * User: btaylor5
  * Date: 4/9/15
  * Time: 11:09 AM
+ *
+ * A Player class that stores basic stats, information, and will auto retrieve player image links
+ *
  */
 
 class Player {
 
-    private $PlayerPhoto;
     private $arrayRepresentation;
     private $name;
     private $id;
 
     /**
-     * Player constructor.
+     * Player constructor. Pass in an array with the following information and it will
+     * find a link to the players image
+     *
      * @arg $array( 'PlayerID',
      *              'PlayerName',
      *              'PlayerPosition',
@@ -50,44 +54,34 @@ class Player {
     }
 
     // sets the players PlayerPhoto
-    public function setPhoto($url) {
+    public function setPhoto($url)
+    {
         $this->arrayRepresentation['ImageURL'] = $url;
     }
 
-    public function getPhoto() {
-        return $this->PlayerPhoto;
+    // Sets the players image url
+    public function findImageURL()
+    {
+        $baseURL = 'http://www.nba.com/media/playerfile/';
+        $fileName = str_replace(' ', '_', strtolower($this->name));
+        $url = $baseURL . $fileName . '.jpg';
+        $this->setPhoto($url);
     }
 
-    // return the url of this players image
-//    http://i.cdn.turner.com/nba/nba/.element/img/2.0/sect/statscube/players/large/chris_copeland.png
-    public function findImageURL() {
-        $baseURL = 'http://i.cdn.turner.com/nba/nba/.element/img/2.0/sect/statscube/players/large/';
-        $fileName = str_replace(' ', '_', $this->name);
-        $url = $baseURL . $fileName . '.png';
-
-
-//        $curl = curl_init($url);
-//        curl_setopt($curl,  CURLOPT_RETURNTRANSFER, TRUE);
-//        curl_exec($curl);
-
-//        /* Check for 404 (file not found). */
-//        $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-//        if($httpCode == 404) {
-//            $this->arrayRepresentation['ImageURL'] = 'src/generic-avatar-390x390.png';
-//        } else {
-            $this->arrayRepresentation['ImageURL'] = $url;
-//        }
-//        curl_close($curl);
-    }
-
-    public function arrayRepresentation() {
+    // returns the Player as an array
+    // allows users to take advantage of built in array functions
+    public function arrayRepresentation()
+    {
         return $this->arrayRepresentation;
     }
 
-    public function __toString() {
+    // returns the players name
+    public function __toString()
+    {
         return $this->name;
     }
 
+    // returns the players ID
     public function getID() {
         return $this->id;
     }
