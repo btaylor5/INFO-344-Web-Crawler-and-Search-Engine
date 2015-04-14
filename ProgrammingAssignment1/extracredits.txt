@@ -21,7 +21,9 @@ This had the advantage of speeding up results, however if you open
 up the console the errors are visible.
 
 In the end, was an awesome experience solving the problem with curl even though
-it didn't make its way into the final codebase
+it didn't make its way into the final
+
+KNOWN PROBLEMS: Chris Johnson (there are 2), Wes Johnson
 
 ------------------------------------------Fuzzy Spelling-------------------------------------
 
