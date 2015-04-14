@@ -4,10 +4,12 @@
  * User: btaylor5
  * Date: 4/9/15
  * Time: 7:46 PM
+ *
+ * Listens for requests and returns JSON representation of the query results
+ *
  */
 header("Content-Type: application/json", true);
 include_once('../Model/PlayerStack.php');
-error_reporting(E_ALL);
 include_once('../Model/DBAccess.php');
 include_once('../Model/Search.php');
 include_once('../Model/Player.php');

@@ -1,4 +1,3 @@
-
 ---------------------------Site Structure-----------------------------
 While implementing a solution to this I knew I was supposed to break up code into their different purposes.
 The Requests.php (in the controller directory) is what is listening for requests and is what will
@@ -14,6 +13,8 @@ new install package I was able to easily install the necessary packages eventhou
 I used MySQL workbench to create and import the database. It didn't have a nice import cvs function like I thought
 I heard in class, but I knew stack overflow would help me out and I got it done in a couple of minutes as
 if I had used phpMyAdmin.
+
+using a config.php so that my passwords don't live in git
 
 ---------------------------User Experience--------------------------
 
