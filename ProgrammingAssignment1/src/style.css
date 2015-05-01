@@ -1,0 +1,92 @@
+.brand {
+    color: white;
+    margin: auto;
+    padding: 0.5em;
+    width: 50%;
+    text-align: center;
+}
+
+.brand:hover {
+    color:white;
+}
+
+.search-box {
+    margin-top: 5em;
+    margin-left: auto;
+    margin-right: auto;
+    padding-top: 10px;
+    width: 90%;
+    min-width: 730px;
+}
+
+.search-button {
+    text-align: center;
+}
+
+.search-container {
+    width: 75%;
+    margin:auto;
+    text-align: center;
+}
+
+#logo {
+    width: 30%;
+    padding: 0.3em;
+    margin-bottom: 10px;
+    vertical-align: middle;
+}
+
+body {
+    /*background-size: auto;*/
+    /*background-image: url('nba_teams_wallpaper.jpg');*/
+    background-image: url('basket_ball_court.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+
+}
+
+.player {
+    height: 180px;
+    width: 60%;
+    min-width: 700px;
+    margin: auto;
+    color: Black;
+    border-radius: 5px;
+    background-color: #eee;
+    margin-bottom: 1.1em;
+}
+
+.profile-pic {
+    margin-top: 37px;
+    margin-left: 14px;
+    margin-right: 1em;
+    width: 100px;
+    height: 100px;
+}
+
+.PlayerName {
+    font-size: 18pt;
+    margin: 14px;
+}
+
+.profile-pic, .PlayerName {
+    float:left;
+}
+
+.stat-table {
+    margin: auto auto;
+    width: 75%;
+    float: left;
+}
+
+.loading {
+    display: block;
+    width: 50px;
+    margin-left:auto;
+    margin-right:auto;
+}
+
+.No-Results {
+    text-align: center;
+    vert-align: middle;
+}

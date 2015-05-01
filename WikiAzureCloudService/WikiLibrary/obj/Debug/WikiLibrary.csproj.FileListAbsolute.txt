@@ -1,0 +1,4 @@
+C:\Users\Bryant Taylor\Source\Repos\INFO344\WikiAzureCloudService\WikiLibrary\bin\Debug\WikiLibrary.dll
+C:\Users\Bryant Taylor\Source\Repos\INFO344\WikiAzureCloudService\WikiLibrary\bin\Debug\WikiLibrary.pdb
+C:\Users\Bryant Taylor\Source\Repos\INFO344\WikiAzureCloudService\WikiLibrary\obj\Debug\WikiLibrary.dll
+C:\Users\Bryant Taylor\Source\Repos\INFO344\WikiAzureCloudService\WikiLibrary\obj\Debug\WikiLibrary.pdb

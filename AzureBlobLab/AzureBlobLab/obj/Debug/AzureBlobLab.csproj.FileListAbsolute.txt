@@ -1,0 +1,2 @@
+C:\Users\Bryant Taylor\Source\Repos\INFO344\AzureBlobLab\AzureBlobLab\bin\Debug\AzureBlobLab.exe.config
+C:\Users\Bryant Taylor\Source\Repos\INFO344\AzureBlobLab\AzureBlobLab\obj\Debug\AzureBlobLab.csprojResolveAssemblyReference.cache

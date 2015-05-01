@@ -1,0 +1,33 @@
+﻿body {
+}
+
+#wikiImage {
+    margin-top: 0;
+    padding-top: 0;
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    max-width: 500px;
+}
+
+#search {
+    width: 75%;
+    margin: auto;
+    font-size: large;
+    font-weight:200;
+    display: block;
+}
+
+#suggestions {
+    margin-top: 8em;
+    width: 75%;
+    margin: auto;
+    font-size: large;
+    font-weight:200;
+    list-style-type: none;
+}
+
+input {
+
+}

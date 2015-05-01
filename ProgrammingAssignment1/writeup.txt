@@ -1,0 +1,36 @@
+---------------------------Site Structure-----------------------------
+While implementing a solution to this I knew I was supposed to break up code into their different purposes.
+The Requests.php (in the controller directory) is what is listening for requests and is what will
+respond with search results formatted in JSON. The 'Model' folder holds objects that are used to calculate and
+retrieve the information behind the search queries. The View is purely used for breaking down the html into chunks so
+that if the site were to scale, I could easily reuse page segments.
+
+---------------------------Infrastructure--------------------------
+Using PHP5, MySQL, Amazon's EC2, and Amazon's RDS was straightforward for me to install. I wish I went with a debian
+based OS for EC2 since that is what I am most comfortable using, but I knew what the common php packages are so with the
+new install package I was able to easily install the necessary packages eventhough the script given to us was out of date.
+
+I used MySQL workbench to create and import the database. It didn't have a nice import cvs function like I thought
+I heard in class, but I knew stack overflow would help me out and I got it done in a couple of minutes as
+if I had used phpMyAdmin.
+
+using a config.php so that my passwords don't live in git
+
+---------------------------User Experience--------------------------
+
+Searching:
+
+    One Name:
+        using the LIKE statement and a foreach loop in php, I made a list of players that matches at least one of the
+        names. I also forced the strings to be at least 2 characters in length so It would return every name with that
+        letter present.
+
+    Fuzzy Spelling:
+        Using the levenshtein function and SQL's SOUNDS LIKE, I was able to check for miss spellings.
+
+    Punctuation:
+        using sql's replace function I made it so that punctuation will never prevent the user for finding a player
+        (includes hyphens, commas, and periods)
+
+
+---------------------------------------------------------------------

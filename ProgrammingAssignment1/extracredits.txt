@@ -1,0 +1,40 @@
+Extra credits – short paragraph in extracredits.txt for each extra credit
+(how to see/trigger/evaluate/run your extra credit feature and how you implemented it)
+
+-----------------------------------------------AJAX----------------------------------------
+
+Just Click the button that says search and it will use
+jQueries ajax to post to "/ProgrammingAssignment1/code/Controller/Requests.php", returns the response as JSON and
+jquery then adds the results to the page.
+
+--------------------------------------------Player Pictures---------------------------------
+
+
+Feature is enabled by default. The resource I am using does not guaranteed to have all of the players images so
+I implemented two solutions to the problem. The first way I solved the problem was to use
+curl to determine if the image link would return a 404. If it did It would use a generic avatar image.
+If it returned 200 the link would be used for the players image.
+
+Using curl took way too long to wait for responses, so instead I used
+javascript to place generic images for whatever returned 404's.
+This had the advantage of speeding up results, however if you open
+up the console the errors are visible.
+
+In the end, was an awesome experience solving the problem with curl even though
+it didn't make its way into the final
+
+KNOWN PROBLEMS: Chris Johnson (there are 2), Wes Johnson
+
+------------------------------------------Fuzzy Spelling-------------------------------------
+
+Using PHP's levenshtein function. The code resorts to this method of searching when there is not a
+single match through the initial search. I chose to only use it in this way because I didn't
+want to have to return all results from the database for each search.
+
+So instead my algorithm uses this logic:
+   1) Find matches for each individual. If it has one matching name it will return it.
+   2) If it has no results, it will then run php's default levenshtein algorithm to try and find matches.
+
+------------------------------------------Looks Good-------------------------------------------
+
+I used to Bootstrap to make the site look presentable.

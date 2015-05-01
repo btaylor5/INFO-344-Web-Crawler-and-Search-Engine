@@ -1,0 +1,18 @@
+[Site Structure]
+Implimented with the follwoing structure:
+	WebRole1 -> To Start the web service on deploy
+
+	WebService.asmx -> To receive and respond to all the requests 
+
+	WorkerRole1 -> to continually touch the web service and keep it in memory.
+
+
+[AJAX]
+using jQuerys Ajax method, I perform a post request on key up. On success of that ajax post request, it will clear the suggestions box and then append the suggestions as list items below the search box.
+
+[C# Best Practices]
+As Always, each class gets their own files.  Taking advantage of the .NET framework made implimenting the web service straightforward.
+
+[Trie]
+I ended up implimenting the Trie structure in two ways:
+The first way used a dictionary<char, TrieNode> . After getting it working I noticed that it only read up to the end of the letter B, which wasn't very much. Because of that, I decided to impliment it a second time using fixed arrays, thinking that would provide some memory improvements. After I got finished implimenting it, however it reached about the same depth.
