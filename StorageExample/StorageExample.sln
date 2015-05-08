@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{CC5FD16D-436D-48AD-A40C-5A424C6E3E79}") = "StorageExample", "StorageExample\StorageExample.ccproj", "{3D030E2B-EDC3-4D08-9FDD-D13EF7187B3E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebRole1", "WebRole1\WebRole1.csproj", "{BDB34E65-F9E9-4C5E-8C78-A4C56FCDE69C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WorkerRole1", "WorkerRole1\WorkerRole1.csproj", "{B742B95E-11D0-4E3E-B8C3-B2076A9B2AAE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3D030E2B-EDC3-4D08-9FDD-D13EF7187B3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D030E2B-EDC3-4D08-9FDD-D13EF7187B3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D030E2B-EDC3-4D08-9FDD-D13EF7187B3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D030E2B-EDC3-4D08-9FDD-D13EF7187B3E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BDB34E65-F9E9-4C5E-8C78-A4C56FCDE69C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BDB34E65-F9E9-4C5E-8C78-A4C56FCDE69C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BDB34E65-F9E9-4C5E-8C78-A4C56FCDE69C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BDB34E65-F9E9-4C5E-8C78-A4C56FCDE69C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B742B95E-11D0-4E3E-B8C3-B2076A9B2AAE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B742B95E-11D0-4E3E-B8C3-B2076A9B2AAE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B742B95E-11D0-4E3E-B8C3-B2076A9B2AAE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B742B95E-11D0-4E3E-B8C3-B2076A9B2AAE}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

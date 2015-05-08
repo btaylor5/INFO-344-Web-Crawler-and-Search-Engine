@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<serviceModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="WikiAzureCloudService" generation="1" functional="0" release="0" Id="4ecf516f-fde6-4e6f-a7d4-49c2261eede0" dslVersion="1.2.0.0" xmlns="http://schemas.microsoft.com/dsltools/RDSM">
+<serviceModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" name="WikiAzureCloudService" generation="1" functional="0" release="0" Id="cdc42582-3dac-4e72-9e7c-9b941e5193b3" dslVersion="1.2.0.0" xmlns="http://schemas.microsoft.com/dsltools/RDSM">
   <groups>
     <group name="WikiAzureCloudServiceGroup" generation="1" functional="0" release="0">
       <componentports>
@@ -88,9 +88,9 @@
     </group>
   </groups>
   <implements>
-    <implementation Id="622967bc-981c-42a5-af92-d5ca321acb1c" ref="Microsoft.RedDog.Contract\ServiceContract\WikiAzureCloudServiceContract@ServiceDefinition">
+    <implementation Id="dd7867d1-9f95-45e7-bcea-ec92d86183e9" ref="Microsoft.RedDog.Contract\ServiceContract\WikiAzureCloudServiceContract@ServiceDefinition">
       <interfacereferences>
-        <interfaceReference Id="beb8596b-4b4e-417b-b0dd-35db0b932531" ref="Microsoft.RedDog.Contract\Interface\WebRole1:Endpoint1@ServiceDefinition">
+        <interfaceReference Id="72612bf1-5167-4c3c-bb09-95d93cd43a17" ref="Microsoft.RedDog.Contract\Interface\WebRole1:Endpoint1@ServiceDefinition">
           <inPort>
             <inPortMoniker name="/WikiAzureCloudService/WikiAzureCloudServiceGroup/WebRole1:Endpoint1" />
           </inPort>

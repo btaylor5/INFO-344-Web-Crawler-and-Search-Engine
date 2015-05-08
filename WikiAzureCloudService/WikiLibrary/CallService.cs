@@ -17,8 +17,8 @@ namespace WikiLibrary
     /// </summary>
     public class CallService
     {
-        private const string BASE_URL = "http://wikisuggest.cloudapp.net/WikiSuggest.asmx";
-        //private const string BASE_URL = "http://localhost:4109/WikiSuggest.asmx";
+        //private const string BASE_URL = "http://wikisuggest.cloudapp.net/WikiSuggest.asmx";
+        private const string BASE_URL = "http://localhost:4109/WikiSuggest.asmx";
 
 
         /// <summary>
