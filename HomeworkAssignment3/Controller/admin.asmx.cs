@@ -42,9 +42,16 @@ namespace Controller
             queue.AddMessage(message);
         }
 
+        [WebMethod]
+        public string StartCrawling()
+        {
+            AddMessage("http://www.cnn.com");
+            return "Started Crawling CNN";
+        }
+
 
         [WebMethod]
-        public string AddUrl()
+        public string AddUrlToTable()
         {
 
             while (!CreatedTableAfterDelete()) { Debug.WriteLine("Creating Table..."); }
@@ -99,19 +106,6 @@ namespace Controller
 
             while (!CreatedTableAfterDelete()) { }
             return "History Was Removed";
-
-        }
-
-        [WebMethod]
-        public string StartCrawling()
-        {
-            queue.CreateIfNotExists();
-
-            string url = "http://BryantTaylor.info";
-            CloudQueueMessage message = new CloudQueueMessage(url);
-            queue.AddMessage(message);
-
-            return "Started Crawling";
         }
 
         private bool CreatedTableAfterDelete()

@@ -140,7 +140,25 @@ namespace Crawler
 
             using (XmlReader reader = XmlReader.Create(stream))
             {
-                
+                //<url>
+                //  <loc>
+                        //THE LINK
+                //  </loc>
+                //  <ton of shiit />
+                //<url>
+                while (reader.Read())
+                {
+                    //Debug.WriteLine("For URL: " + url + " ->  " + reader.Name);
+                    if (reader.Name.Equals("loc")) {
+                        string schemaUrl = reader.ReadElementString();
+                        if (schemaUrl.EndsWith("html") || schemaUrl.EndsWith(".htm"))
+                        {
+                            Debug.WriteLine("Found" + schemaUrl);
+                            //Crawl If I Can
+                                // Build A tree. Break Down the URLS into different hierachies where it each folder has flag for allowed or denied
+                        }
+                    }
+                }
             }
 
         }
@@ -223,6 +241,7 @@ namespace Crawler
                         else if (line.StartsWith("Sitemap:"))
                         {
                             string sitemapPath = cutBetweenStrings(line, "Sitemap:", "#");
+                            urlBank.Add(sitemapPath, URLStatus.Status.Sitemap);
                             Debug.WriteLine(sitemapPath);
                         }
                         else if (line.StartsWith("Disallow:")) {
