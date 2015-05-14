@@ -118,7 +118,7 @@ namespace DashboardWeb
             {
                 if ((e.RequestInformation.HttpStatusCode == 409) && (e.RequestInformation.ExtendedErrorInformation.ErrorCode.Equals(TableErrorCodeStrings.TableBeingDeleted)))
                 {
-                    Thread.Sleep(1000);// The table is currently being deleted. Try again until it works.
+                    Thread.Sleep(2000);// The table is currently being deleted. Try again until it works.
                     return false;
                 }
                 else

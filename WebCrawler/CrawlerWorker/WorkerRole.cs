@@ -124,7 +124,6 @@ namespace CrawlerWorker
             {
                 return null;
             }
-
         }
 
         private string GetHTML(string url) {
