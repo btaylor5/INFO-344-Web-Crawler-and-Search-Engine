@@ -25,8 +25,8 @@ namespace Crawler
     {
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly ManualResetEvent runCompleteEvent = new ManualResetEvent(false);
-
-        private WebCrawler crawler = new WebCrawler(new string[] { "cnn.com" });
+        private string[] domainBases = new string[] { "cnn.com" };
+        WebCrawler crawler;
 
         public override void Run()
         {
@@ -49,6 +49,10 @@ namespace Crawler
 
             // For information on handling configuration changes
             // see the MSDN topic at http://go.microsoft.com/fwlink/?LinkId=166357.
+            QueueCommunication.InitializeCommunication();
+            TableCommunication.InitializeCommunication();
+
+            crawler = new WebCrawler(domainBases);
 
             bool result = base.OnStart();
 
@@ -71,37 +75,59 @@ namespace Crawler
 
         private async Task RunAsync(CancellationToken cancellationToken)
         {
-            QueueCommunication.InitializeCommunication();
-            TableCommunication.InitializeCommunication();
 
-            bool root = true;
+            int performanceLoop = 20;
+            string lastCommand = "STOP";
             // TODO: Replace the following with your own logic.
             while (!cancellationToken.IsCancellationRequested)
             {
+                if (performanceLoop >= 0)
+                {
+                    performanceLoop--;
 
-                int? cachedMessageCount = QueueCommunication.MessageCount();
-                if (cachedMessageCount > 0)
+                    PerformanceMonitor.GetCPU();
+                    PerformanceMonitor.GetMemory();
+                    if (performanceLoop == -1)
+                    {
+                        performanceLoop = 20;
+                    }
+                }
+
+
+                if (QueueCommunication.PeekCommand() != null)
+                {
+                    CloudQueueMessage command = QueueCommunication.GetCommand();
+                    lastCommand = command.AsString;
+                    QueueCommunication.DeleteCommand(command);
+                }
+                if (lastCommand.Equals("LOAD"))
+                {
+                    crawler.PrepareCrawlOfSite("http://www.cnn.com");
+                    lastCommand = "CRAWL";
+                }
+                if ((QueueCommunication.PeekURL() != null) && lastCommand.Equals("CRAWL"))
                 {
                     
                     CloudQueueMessage urlMessage = QueueCommunication.GetMessage();
                     string url = urlMessage.AsString;
-                    Debug.WriteLine("\n\n\t" + url + "\n\n\t");
 
-                    
-                    if (root)
-                    {
-                        crawler.PrepareCrawlOfSite(url);
-                        root = false;
-                    }
-
-                    if (!crawler.Disallowed(url) && !crawler.Visited(url))
+                    if (!crawler.Disallowed(url) && !crawler.IsIndexed(url))
                     {
                         CrawledURL info = crawler.CrawlURL(url);
-                        TableCommunication.VisitedUrl(info);
+                        TableCommunication.IndexUrl(info);
                     }
-
+                    if (crawler.Disallowed(url))
+                    {
+                        Debug.WriteLine("Disallowed!!! -> " + url);
+                    }
+                    if (crawler.IsIndexed(url))
+                    {
+                        Debug.WriteLine("Link is Already Indexed! " + url);
+                        // To Do Add To Error Board
+                    }
                     QueueCommunication.DeleteMessage(urlMessage);
                 }
+
                 await Task.Delay(1000);
             }
         }

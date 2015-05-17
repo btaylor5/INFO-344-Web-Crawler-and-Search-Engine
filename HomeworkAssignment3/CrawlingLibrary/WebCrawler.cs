@@ -23,15 +23,16 @@ namespace CrawlingLibrary
         private static CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
 
         private List<string> allowedDomainBases;
-        private List<string> disallowedList;
+        private HashSet<string> disallowedList;
         private List<string> siteMaps;
         private List<string> toVisit;
+        private int currentDomainBase = 0;
 
         //private static CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();
         //private static CloudQueue queue = queueClient.GetQueueReference("todo");
 
-        private static CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-        private static CloudTable table = tableClient.GetTableReference("urls");
+        //private static CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
+        //private static CloudTable table = tableClient.GetTableReference("urls");
 
         public WebCrawler(string[] domainBase)
         {
@@ -40,13 +41,14 @@ namespace CrawlingLibrary
             {
                 allowedDomainBases.Add(domain);
             }
-            disallowedList = new List<string>();
+            disallowedList = TableCommunication.DisallowList(allowedDomainBases[currentDomainBase]);
             siteMaps = new List<string>();
             toVisit = new List<string>();
         }
 
         public void PrepareCrawlOfSite(string url)
         {
+            Debug.WriteLine("Crawling Robot.txt");
             Dictionary<string, URLStatus.Status> robotResults = ParseRobotTxtIfFound(url);
                         // Have A Dictioray with all of the sitemap paths, and allowable, and disallowed
             foreach (KeyValuePair<string, URLStatus.Status> entry in robotResults)
@@ -64,6 +66,7 @@ namespace CrawlingLibrary
                     AddSiteMapToQueue(entry.Key);
                 }
             }
+            Debug.WriteLine("Done Crawling Robot.txt");
         }
 
         private void AddSiteMapToQueue(string url)
@@ -72,45 +75,74 @@ namespace CrawlingLibrary
             // Todo: Recurse Through SiteMaps that lead to sitemaps, be aware that they wil throw 404
             // Todo: Check SiteMaps for the past tqo months
 
-            WebClient client = new WebClient();
-            Stream stream = client.OpenRead(url);
-
-            using (XmlReader reader = XmlReader.Create(stream))
+            try
             {
-                //<url>
-                //  <loc>
-                //THE LINK
-                //  </loc>
-                //  <ton of shiit />
-                //<url>
-                while (reader.Read())
+                WebClient client = new WebClient();
+                Stream stream = client.OpenRead(url);
+
+                using (XmlReader reader = XmlReader.Create(stream))
                 {
-                    //Debug.WriteLine("For URL: " + url + " ->  " + reader.Name);
-                    if (reader.Name.Equals("loc"))
+                    //<url>
+                    //  <loc>
+                    //THE LINK
+                    //  </loc>
+                    //  <ton of shiit />
+                    //<url>
+                    string schemaUrl = "";
+                    DateTime time = DateTime.MinValue;
+                    while (reader.Read())
                     {
-                        string schemaUrl = reader.ReadElementString();
-                        if (schemaUrl.EndsWith(".xml"))
+                        //Debug.WriteLine("For URL: " + url + " ->  " + reader.Name);
+                        if (reader.Name.Equals("loc"))
                         {
-                            reader.Read();
-                            if (reader.Name.Equals("lastmod"))
-                            {
-                                DateTime time = reader.ReadElementContentAsDateTime();
-                                if (time > DateTime.Now.AddMonths(-2))
-                                {
-                                    Debug.WriteLine("\nFound SiteMap: " + schemaUrl + "\n");
-                                    AddSiteMapToQueue(schemaUrl);
-                                }
-                                Debug.WriteLine("Too Old");
-                            }
+                            schemaUrl = reader.ReadElementString();
                         }
-                        else
+                        if (reader.Name.Equals("lastmod"))
                         {
-                            QueueCommunication.AddURL(schemaUrl);
+                            time = reader.ReadElementContentAsDateTime();
+                        }
+                        else if (reader.Name.Equals("<news:publication_date>"))
+                        {
+                            time = reader.ReadElementContentAsDateTime();
+                        }
+                        else if (!schemaUrl.Equals("") && (reader.Name.Equals("sitemap") || reader.Name.Equals("url")))
+                        {
+                            time = DateTime.Now;
+                        }
+                        if (!schemaUrl.Equals("") && !IsOld(time))
+                        {
+                            if (schemaUrl.EndsWith(".xml"))
+                            {
+                                AddSiteMapToQueue(schemaUrl);
+                            }
+                            else if (!TableCommunication.IsTouchedLink(schemaUrl))
+                            {
+                                TableCommunication.TouchLink(schemaUrl);
+                                Debug.WriteLine("[With Time]: " + time.ToString());
+                                QueueCommunication.AddURL(schemaUrl);
+                            }
+                            schemaUrl = "";
+                            time = DateTime.MinValue;
+                        }
+                        else if (!schemaUrl.Equals("") && IsOld(time) && time != DateTime.MinValue)
+                        {
+                            Debug.WriteLine("[Too Old, But Touching]: " + time);
+                            TableCommunication.TouchLink(schemaUrl);
+                            schemaUrl = "";
+                            time = DateTime.MinValue;
                         }
                     }
                 }
             }
+            catch (HtmlWebException ex)
+            {
+                TableCommunication.InsertError("404", ex.Message, url);
+            }
+        }
 
+        public bool IsOld(DateTime time)
+        {
+            return (time <= DateTime.Now.AddMonths(-2));
         }
 
         public CrawledURL CrawlURL(string url)
@@ -124,21 +156,37 @@ namespace CrawlingLibrary
             {
                 string title = doc.DocumentNode.SelectSingleNode("//head/title").InnerText;
 
-                Debug.WriteLine("\n\n\t" + title + "\n\n");
-
+                //Debug.WriteLine("\n\n\t" + title + "\n\n");
+                HashSet<string> uniqueLinks = new HashSet<string>();
                 foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//a[@href]"))
                 {
                     string path = link.GetAttributeValue("href", null);
 
-                    Debug.WriteLine("On Page: " + link.GetAttributeValue("href", null));
-                    if (path.StartsWith("/"))
-                    {
-                        path = FixFilePath(url, path);
-                        Debug.WriteLine("Fix Path:" + path);
-                    }
-                    // When adding to the queue, make sure it's a whole URL and not a filepath.
-                }
+                    path = FixFilePath(url, path);
+                    //Debug.WriteLine("Fixed Path:" + path);
 
+                    if(sameDomain(path) && !Disallowed(path) && !TableCommunication.IsTouchedLink(path)) {
+                        Debug.WriteLine("New Link, Touching: " + url);
+                        TableCommunication.TouchLink(path);
+                        QueueCommunication.AddURL(path);
+                    }
+                    else if (TableCommunication.IsTouchedLink(path))
+                    {
+                        Debug.WriteLine("Already Touched: " + path);
+                    }
+                    else if (Disallowed(path))
+                    {
+                        Debug.WriteLine("Disallowed: " + path);
+                    }
+                    else if (!sameDomain(path))
+                    {
+                        Debug.WriteLine("Not the Same Domain: " + path);
+                    }
+                    else
+                    {
+                        Debug.WriteLine("Something Else Went wrong in WorkerRole: " + path);
+                    }
+                }
                 return new CrawledURL(title, url);
             }
             else
@@ -180,14 +228,12 @@ namespace CrawlingLibrary
                         {
                             string sitemapPath = cutBetweenStrings(line, "Sitemap:", "#");
                             urlBank.Add(sitemapPath, URLStatus.Status.Sitemap);
-                            Debug.WriteLine(sitemapPath);
                         }
                         else if (line.StartsWith("Disallow:"))
                         {
                             string result = url + cutBetweenStrings(line, "Disallow:", "#");
+                            TableCommunication.AddToDisallow(result, allowedDomainBases[currentDomainBase]);
                             urlBank.Add(result, URLStatus.Status.Disallow);
-                            Debug.WriteLine(result);
-
                         }
                         else if (line.StartsWith("Allow:"))
                         {
@@ -199,7 +245,6 @@ namespace CrawlingLibrary
                         else if (line.StartsWith("#"))
                         {
                             Debug.WriteLine("Comment:" + line);
-                            //Comment
                         }
                     }
                 }
@@ -246,17 +291,11 @@ namespace CrawlingLibrary
             }
         }
 
-        private void AddToTable(CrawledURL crawledUrl)
-        {
-            TableOperation insertOperation = TableOperation.Insert(crawledUrl);
-            table.Execute(insertOperation);
-        }
-
         public bool Disallowed(string url)
         {
-            foreach (string directory in disallowedList)
+            foreach (string disallowed in disallowedList)
             {
-                if (url.Contains(directory))
+                if (url.StartsWith(disallowed))
                 {
                     return true;
                 }
@@ -264,9 +303,9 @@ namespace CrawlingLibrary
             return false;
         }
 
-        public bool Visited(string url)
+        public bool IsIndexed(string url)
         {
-            return TableCommunication.CrawledYet(url);
+            return TableCommunication.IndexedYet(url);
         }
 
         public bool sameDomain(string url)
@@ -283,45 +322,18 @@ namespace CrawlingLibrary
 
         public string FixFilePath(string currentURL, string path)
         {
-           Debug.WriteLine("Attempt to Fix: " + path);
-           if ((path.StartsWith("//") || path.StartsWith("http://")) && sameDomain(path))
+           if (path.StartsWith("//") || path.StartsWith("www."))
            {
-               return path;
+               return "http:" + path;
            }
            else if (path.StartsWith("/"))
            {
                return cutBetweenStrings(currentURL, "", ".com") + ".com" + path;
            }
-           return path;
-        }
-
-        public string RemoveURLHistory()
-        {
-            table.DeleteIfExists();
-
-            while (!CreatedTableAfterDelete()) { }
-            return "History Was Removed";
-        }
-
-        private bool CreatedTableAfterDelete()
-        {
-            try
-            {
-                table.CreateIfNotExists();
-                return true;
-            }
-            catch (StorageException e)
-            {
-                if ((e.RequestInformation.HttpStatusCode == 409) && (e.RequestInformation.ExtendedErrorInformation.ErrorCode.Equals(TableErrorCodeStrings.TableBeingDeleted)))
-                {
-                    Thread.Sleep(1000);// The table is currently being deleted. Try again until it works.
-                    return false;
-                }
-                else
-                {
-                    throw;
-                }
-            }
+           {
+               Debug.WriteLine("FilePath is Perfect: " + path);
+               return path;
+           }
         }
     }
 }

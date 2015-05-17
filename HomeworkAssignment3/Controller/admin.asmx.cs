@@ -10,6 +10,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Web;
+using System.Web.Script.Serialization;
+using System.Web.Script.Services;
 using System.Web.Services;
 
 namespace Controller
@@ -21,20 +23,39 @@ namespace Controller
     [WebServiceBinding(ConformsTo = WsiProfiles.BasicProfile1_1)]
     [System.ComponentModel.ToolboxItem(false)]
     // To allow this Web Service to be called from script, using ASP.NET AJAX, uncomment the following line. 
-    // [System.Web.Script.Services.ScriptService]
+    [System.Web.Script.Services.ScriptService]
     public class admin : System.Web.Services.WebService
     {
 
 
         [WebMethod]
-        public string StartCrawling()
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string Start()
         {
-            QueueCommunication.AddURL("http://www.cnn.com");
-            return "Started Crawling CNN";
+            QueueCommunication.AddCommand("CRAWL");
+            return new JavaScriptSerializer().Serialize("[Command] [" + DateTime.Now.ToString() + "] Start Crawling");
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+
+        public string Load()
+        {
+            QueueCommunication.AddCommand("LOAD");
+            return new JavaScriptSerializer().Serialize("[Command] [" + DateTime.Now.ToString() + "] Load Crawler");
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string Stop()
+        {
+            QueueCommunication.AddCommand("STOP");
+            return new JavaScriptSerializer().Serialize("[Command] [" + DateTime.Now.ToString() + "] Stop Crawling");
         }
 
 
         [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public List<string> LastTenVisitedUrls()
         {
             List<string> answer = TableCommunication.LastTenVisitedUrls();
@@ -42,6 +63,7 @@ namespace Controller
         }
 
         [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string clearQueue()
         {
             QueueCommunication.DeleteQueue();
@@ -49,10 +71,54 @@ namespace Controller
         }
 
         [WebMethod]
-        public string clearTable()
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string ClearIndex()
         {
             TableCommunication.RemoveURLHistory();
-            return "Deleting Crawl Indices";
+            return "Deleting Indices of Crawled URL";
         }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public bool GetResults(string url)
+        {
+            List<string> bank = new List<string>();
+            List<TouchedURL> answer = TableCommunication.GetList(url);
+            foreach (TouchedURL one in answer)
+            {
+                bank.Add(url);
+            }
+            int size = bank.Count;
+            return size > 0;
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string GetMemory()
+        {
+            return new JavaScriptSerializer().Serialize(TableCommunication.GetCounter(1, "Memory"));
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string GetCPU()
+        {
+            return new JavaScriptSerializer().Serialize(TableCommunication.GetCounter(1, "CPU"));
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string LeftToProcess()
+        {
+            return new JavaScriptSerializer().Serialize(QueueCommunication.URLCount());
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string GetErrorMessages()
+        {
+            return new JavaScriptSerializer().Serialize(TableCommunication.GetErrorMessages(1));
+        }
+
     }
 }

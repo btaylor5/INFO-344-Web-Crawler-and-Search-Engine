@@ -18,22 +18,116 @@ namespace CrawlingLibrary
         private static CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
 
         private static CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-        private static CloudTable table = tableClient.GetTableReference("urls");
+        private static CloudTable indexed = tableClient.GetTableReference("indexed");
+        private static CloudTable queued = tableClient.GetTableReference("QueuedOrProcessed");
+        private static CloudTable disallow = tableClient.GetTableReference("disallowed");
+        private static CloudTable performace = tableClient.GetTableReference("performance");
+        private static CloudTable errors = tableClient.GetTableReference("errors");
 
 
         public static void InitializeCommunication()
         {
-            table.CreateIfNotExists();
+            indexed.CreateIfNotExists();
+            queued.CreateIfNotExists();
+            disallow.CreateIfNotExists();
+            performace.CreateIfNotExists();
+            errors.CreateIfNotExists();
         }
 
-
-        public static void VisitedUrl(CrawledURL url)
+        public static bool IsTouchedLink(string url)
         {
+           TableQuery<TouchedURL> touchedLink = new TableQuery<TouchedURL>()
+                .Where(
+                    TableQuery.GenerateFilterCondition("url", QueryComparisons.Equal, url)
+                    );
+
+            var results = queued.ExecuteQuery(touchedLink).ToList();
+            bool result = results.Count > 0;
+            return result;
+        }
+
+        public static List<TouchedURL> GetList(string url)
+        {
+            TableQuery<TouchedURL> touchedLink = new TableQuery<TouchedURL>()
+                .Where(
+                    TableQuery.GenerateFilterCondition("url", QueryComparisons.Equal, url)
+                    );
+
+            var results = queued.ExecuteQuery(touchedLink).ToList();
+            return results;
+        }
+
+        public static void AddToDisallow(string path, string source)
+        {
+            source = SanitizeForTable(source);
+
+            DisallowedURL url = new DisallowedURL(path, source);
+            TableOperation operation = TableOperation.Insert(url);
+            try
+            {
+                Debug.WriteLine("[Add To Disallow]: " + url.path);
+                disallow.Execute(operation);
+            }
+            catch (StorageException se)
+            {
+                Debug.WriteLine("Couldn't Disallow!!: ");
+                Debug.WriteLine("Error: " + se.Message + "\n");
+            }
+        }
+
+        public static HashSet<string> DisallowList(string source)
+        {
+            source = SanitizeForTable(source);
+            TableQuery<DisallowedURL> query = new TableQuery<DisallowedURL>()
+                .Where(
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, source)
+                    );
+
+            var results = disallow.ExecuteQuery(query).Select(x => x.path).ToList();
+            HashSet<string> response = new HashSet<string>();
+            foreach (string url in results)
+            {
+                response.Add(url);
+            }
+
+            return response;
+        }
+
+        public static string SanitizeForTable(string input)
+        {
+            char[] forbidden = { '?', '\\', '/', '#' };
+            var answer = new string(input
+                .Where(x => !forbidden.Contains(x))
+                .ToArray());
+            return answer;
+        }
+
+        public static void TouchLink(string url)
+        {
+            TouchedURL touched = new TouchedURL(url);
+            TableOperation operation = TableOperation.Insert(touched);
+            try
+            {
+                queued.Execute(operation);
+            }
+            catch (StorageException se)
+            {
+                Debug.WriteLine("\nError Touching Link!!!!: ");
+                Debug.WriteLine("Caught Table Insert Error: " + se.Message + "\n");
+            }
+
+        }
+
+        public static void IndexUrl(CrawledURL url)
+        {
+
+            url.PartitionKey = SanitizeForTable(url.PartitionKey);
+
             TableOperation insertOperation = TableOperation.Insert(url);
             try
             {
-                Debug.WriteLine("\n\n\t" + url.Title + " -> " + url.URL + "\n\n");
-                table.Execute(insertOperation);
+                Debug.WriteLine("[Indexed] " + url.Title + " -> " + url.URL + "\n");
+                indexed.Execute(insertOperation);
 
             }
             catch (StorageException se)
@@ -43,18 +137,15 @@ namespace CrawlingLibrary
             }
         }
 
-        public static bool CrawledYet(string url)
+        public static bool IndexedYet(string url)
         {
             TableQuery<CrawledURL> visitedUrl = new TableQuery<CrawledURL>()
                 .Where(
                     TableQuery.GenerateFilterCondition("URL", QueryComparisons.Equal, url)
                     );
 
-            var results = table.ExecuteQuery(visitedUrl).ToList();
+            var results = indexed.ExecuteQuery(visitedUrl).ToList();
             bool result = results.Count > 0;
-            if (result) {
-                Debug.WriteLine("Table Collision, Crawled Yet returning false");
-            }
             return result;
         }
 
@@ -64,23 +155,23 @@ namespace CrawlingLibrary
 
             TableQuery<CrawledURL> rangeQuery = new TableQuery<CrawledURL>()
                 .Where(
-                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.GreaterThanOrEqual, CrawledURL.ChronoCompareString())
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThanOrEqual, ChronHelper.ChronoCompareString())
                     ).Take(10);
 
             try
             {
-                foreach (CrawledURL entity in table.ExecuteQuery(rangeQuery))
+                foreach (CrawledURL entity in indexed.ExecuteQuery(rangeQuery))
                 {
-                    string combo = "[" + entity.URL + "] -> [" + entity.Title + "] containing a body of [" + entity.Body + "]";
+                    string combo = "[Title: " + entity.Title + "]";
                     answer.Add(combo);
-                    Debug.WriteLine(combo);
+                    //Debug.WriteLine(combo);
                 }
             }
             catch (StorageException se) // Ask For Forgiveness
             {
                 if (se.RequestInformation.ExtendedErrorInformation.ErrorCode.Equals(TableErrorCodeStrings.TableNotFound))
                 {
-                    table.CreateIfNotExists();
+                    indexed.CreateIfNotExists();
                     answer = LastTenVisitedUrls();
                 }
                 else
@@ -89,12 +180,15 @@ namespace CrawlingLibrary
                 }
             }
 
+
             return answer;
         }
 
+        
+
         public static bool RemoveURLHistory()
         {
-            table.DeleteIfExists();
+            indexed.DeleteIfExists();
 
             while (!CreatedTableAfterDelete()) { }
             return true;
@@ -104,14 +198,14 @@ namespace CrawlingLibrary
         {
             try
             {
-                table.CreateIfNotExists();
+                indexed.CreateIfNotExists();
                 return true;
             }
             catch (StorageException e)
             {
                 if ((e.RequestInformation.HttpStatusCode == 409) && (e.RequestInformation.ExtendedErrorInformation.ErrorCode.Equals(TableErrorCodeStrings.TableBeingDeleted)))
                 {
-                    Thread.Sleep(1000);// The table is currently being deleted. Try again until it works.
+                    Thread.Sleep(5000);// The table is currently being deleted. Try again until it works.
                     return false;
                 }
                 else
@@ -119,6 +213,46 @@ namespace CrawlingLibrary
                     throw;
                 }
             }
+        }
+
+
+        public static List<string> GetCounter(int resultLimit, string counterType)
+        {
+            TableQuery<PerformanceEntity> touchedLink = new TableQuery<PerformanceEntity>()
+                .Where(TableQuery.CombineFilters(
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, counterType),
+                    TableOperators.And,
+                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.GreaterThanOrEqual, ChronHelper.ChronoCompareString())
+                )).Take(resultLimit);
+
+            var results = performace.ExecuteQuery(touchedLink).Select(x => x.value).ToList();
+
+            return results;
+        }
+
+        public static void InsertCounter(string counterType, string value)
+        {
+            PerformanceEntity perf = new PerformanceEntity(counterType, value);
+            TableOperation operation = TableOperation.Insert(perf);
+            performace.Execute(operation);
+        }
+
+        public static void InsertError(string status, string message, string url)
+        {
+            ErrorEntity entity = new ErrorEntity(status, message, url);
+            TableOperation operation = TableOperation.Insert(entity);
+            errors.Execute(operation);
+        }
+
+        public static List<string> GetErrorMessages(int maxResults)
+        {
+            TableQuery<ErrorEntity> lastErrors = new TableQuery<ErrorEntity>()
+                .Where(
+                    TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.GreaterThanOrEqual, ChronHelper.ChronoCompareString())
+                ).Take(maxResults);
+
+            var results = errors.ExecuteQuery(lastErrors).Select(x => x.ToString()).ToList();
+            return results;
         }
     }
 }

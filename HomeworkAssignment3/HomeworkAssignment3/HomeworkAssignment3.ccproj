@@ -57,10 +57,14 @@
   <ItemGroup>
     <Folder Include="ControllerContent\" />
     <Folder Include="CrawlerContent\" />
+    <Folder Include="Profiles" />
   </ItemGroup>
   <ItemGroup>
     <DiagnosticsConfiguration Include="ControllerContent\diagnostics.wadcfgx" />
     <DiagnosticsConfiguration Include="CrawlerContent\diagnostics.wadcfgx" />
+  </ItemGroup>
+  <ItemGroup>
+    <PublishProfile Include="Profiles\btaylor5info344crawlerProduction.azurePubxml" />
   </ItemGroup>
   <!-- Import the target files for this project template -->
   <PropertyGroup>

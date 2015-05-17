@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+    <script src="script.js"></script>
+
+</head>
+<body>
+    <div class="container">
+
+        <div class="page-header">
+            <h1>Web Crawler Control Panel</h1>
+            <p>State of the WebCrawler: ______________________</p>
+        </div>
+
+    <h2>Counts</h2>
+        <div class="row">
+            <div class="col-md-6">
+                <h3>
+                    Crawling Counts
+                </h3>
+                <table class="table table-bordered">
+                    <thead>
+                        <tr>
+                            <th>
+                                Indexed
+                            </th>
+                            <th>
+                                Crawled
+                            </th>
+                            <th>
+                                Success Rate
+                            </th>
+                            <th>
+                                Left To Crawl
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="indexed_count">
+                                Loading...
+                            </td>
+                            <td class="crawled_count">
+                                Loading...
+                            </td>
+                            <td class="sucess_rate">
+                                Loading...
+                            </td>
+                            <td class="queue_count">
+                                Loading...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h3>
+                    Machine Counters:
+                </h3>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>
+                                    CPU
+                                </th>
+                                <th>
+                                    Memory
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="cpu_stat">
+                                    Loading...
+                                </td>
+                                <td class="memory_stat">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+            </div>
+        </div>
+    <h2>Controls</h2>
+        <div class="row">
+            <div class=" controls col-md-3">
+                <button class="load btn btn-success"><span>Load</span></button>
+            </div>
+            <div class="col-md-3">
+                <button class="start btn btn-primary"><span>Start</span></button>
+            </div>
+            <div class="col-md-3">
+                <button class="stop btn btn-danger"><span>Stop</span></button>
+            </div>
+            <div class="col-md-3">
+                <button class="clear-index btn btn-warning"><span>Clear Index</span></button>
+            </div>
+           
+        </div>
+    <h2>
+        System Log: 
+    </h2>
+        <div class="row">
+            <div class="col-md-9">
+                <div class="well well-lg">
+                    <ul class="log">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <h2>
+            Last 10 Indexed:
+        </h2>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="lastTen well well-lg">
+                    <ul></ul>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h3>
+                    Search By URL
+                </h3>
+                <input type="text" /> <button>Search!</button>
+            </div>
+        </div>
+        </div> <!-- /container -->
+</body>
+</html>
