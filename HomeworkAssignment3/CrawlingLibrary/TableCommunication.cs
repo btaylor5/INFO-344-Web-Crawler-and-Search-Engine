@@ -128,6 +128,7 @@ namespace CrawlingLibrary
 
             url.PartitionKey = SanitizeForTable(url.PartitionKey);
 
+
             TableOperation insertOperation = TableOperation.Insert(url);
             try
             {
@@ -137,7 +138,8 @@ namespace CrawlingLibrary
             catch (StorageException se)
             {
                 Debug.WriteLine("Error!!!!: " + se.Message + "   " + se.Data + "\n");
-                Debug.WriteLine("Caught Table Insert Error: " + url.PartitionKey + " " + url.RowKey + " " + url.Date + " " + url.URL);
+                InsertError(SanitizeForTable(se.Message), SanitizeForTable(se.Data.ToString()), url.URL);
+                Debug.WriteLine("Caught Table Insert Error: " + url.PartitionKey + " " + url.RowKey + " " + url.Date + " " + url.URL + " " + url.Body);
             }
         }
 
@@ -175,7 +177,7 @@ namespace CrawlingLibrary
             {
                 if (se.RequestInformation.ExtendedErrorInformation.ErrorCode.Equals(TableErrorCodeStrings.TableNotFound))
                 {
-                    indexed.CreateIfNotExists();
+                    while (!CreatedTableAfterDelete(indexed)) { }
                     answer = LastTenVisitedUrls();
                 }
                 else
@@ -192,15 +194,15 @@ namespace CrawlingLibrary
         {
             indexed.DeleteIfExists();
 
-            while (!CreatedTableAfterDelete()) { }
+            while (!CreatedTableAfterDelete(indexed)) { }
             return true;
         }
 
-        private static bool CreatedTableAfterDelete()
+        private static bool CreatedTableAfterDelete(CloudTable table)
         {
             try
             {
-                indexed.CreateIfNotExists();
+                table.CreateIfNotExists();
                 return true;
             }
             catch (StorageException e)
@@ -264,9 +266,18 @@ namespace CrawlingLibrary
                 .Where(
                     TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.LessThan, DateTime.Now.AddDays(1))
                     );
-            var total = indexed.ExecuteQuery(allEntries).ToList().Count;
-            return total;
+            try
+            {
+                var total = indexed.ExecuteQuery(allEntries).ToList().Count;
+                return total;
+            }
+            catch (StorageException e)
+            {
+                Debug.WriteLine("Storage Exception");
+                return 0;
+            }
         }
+
 
         public static void InsertSystemStatus(string status, string message)
         {
@@ -326,6 +337,22 @@ namespace CrawlingLibrary
             var results = indexed.ExecuteQuery(lastChange).Select(x => "[Title]: " + x.Title + " [Last-Modified': ").ToList();
             return results;
         }
+
+        public static void RemoveErrorHistory()
+        {
+            errors.DeleteIfExists();
+
+            while (!CreatedTableAfterDelete(errors)) { }
+        }
+
+        public static void RemoveTouchHistory()
+        {
+            touched.DeleteIfExists();
+
+            while (!CreatedTableAfterDelete(touched)) { }
+        }
+
+
 
     }
 }

@@ -25,7 +25,7 @@ namespace Crawler
     {
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly ManualResetEvent runCompleteEvent = new ManualResetEvent(false);
-        private string[] domainBases = new string[] { "cnn.com", "bleacherreport.com/nba" };
+        private string[] domainBases = new string[] { "cnn.com/", "bleacherreport.com/" };
         WebCrawler crawler;
 
         public override void Run()
@@ -100,9 +100,9 @@ namespace Crawler
                 if (lastCommand.Equals("LOAD"))
                 {
                     TableCommunication.InsertSystemStatus("LOADING", "Started Load");
-                    crawler.PrepareCrawlOfSite("http://www.cnn.com/robots.txt", "cnn.com");
+                    crawler.PrepareCrawlOfSite("http://www.cnn.com/robots.txt", "cnn.com/");
                     TableCommunication.InsertSystemStatus("LOADING", "Finished Loading");
-                    crawler.PrepareCrawlOfSite("http://www.bleacherreport.txt/robots.txt", "bleacherreport.com/nba");
+                    crawler.PrepareCrawlOfSite("http://bleacherreport.com/robots.txt", "bleacherreport.com/");
                     lastCommand = "CRAWL";
                 }
                 if ((QueueCommunication.PeekURL() != null) && lastCommand.Equals("CRAWL"))

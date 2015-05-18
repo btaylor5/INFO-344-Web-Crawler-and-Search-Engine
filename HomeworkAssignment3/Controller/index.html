@@ -38,7 +38,7 @@
                                 Success Rate
                             </th>
                             <th>
-                                Left To Crawl
+                                Crawl Queue
                             </th>
                         </tr>
                     </thead>
@@ -88,13 +88,16 @@
                     </table>
             </div>
         </div>
-    <h2>Controls</h2>
         <div class="row">
             <div class="controls col-md-6">
+                <h3>
+                    Controls
+                </h3>
                 <button class="load btn btn-success"><span>Load</span></button>
                 <button class="start btn btn-primary"><span>Start</span></button>
-                <button class="stop btn btn-danger"><span>Stop</span></button>
-                <button class="clear-index btn btn-warning"><span>Clear Index</span></button>
+                <button class="stop btn btn-warning"><span>Stop</span></button>
+                <button class="clear-index btn btn-danger"><span>Clear Index</span></button>
+                <button class="clear-queue btn btn-danger"><span>Clear Crawl Queue</span></button>
             </div>
             <div class="col-md-6">
                 <h3>
@@ -117,27 +120,24 @@
        </div>
         <div class="row">
             <h3>
+                Last 10 Indexed:
+            </h3>
+            <div class="col-md-6">
+                <div class="lastTen well well-lg">
+                    <ul></ul>
+                </div>
+            </div>
+            <h3>
                 Last 10 Errors:
             </h3>
-            <div class="col-md-12">
+            <div class="col-md-6">
                 <div class="well well-lg">
                     <ul class="errors"></ul>
                 </div>
                 <p>Total Errors: <span class="error_count"></span></p>
             </div>
         </div>
-        <div class="row">
-            <h3>
-                Last 10 Indexed:
-            </h3>
-            <div class="col-md-12">
-                <div class="lastTen well well-lg">
-                    <ul>
-
-                    </ul>
-                </div>
-            </div>
-        </div>
+            
         <div class="row">
             <div class="col-md-12">
                 <h3>
@@ -155,6 +155,6 @@
             </div>
 
         </div>
-        </div> <!-- /container -->
+    </div> <!-- /container -->
 </body>
 </html>

@@ -63,17 +63,11 @@ namespace Controller
 
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public string clearQueue()
-        {
-            QueueCommunication.DeleteQueue();
-            return "Deleted Queue";
-        }
-
-        [WebMethod]
-        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string ClearIndex()
         {
             TableCommunication.RemoveURLHistory();
+            TableCommunication.RemoveErrorHistory();
+            TableCommunication.RemoveTouchHistory();
             return "Deleting Indices of Crawled URL";
         }
 
@@ -166,6 +160,13 @@ namespace Controller
 
         }
 
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string ClearQueue()
+        {
+            QueueCommunication.ClearQueue();
+            return "Clearing Queue";
+        }
 
     }
 }

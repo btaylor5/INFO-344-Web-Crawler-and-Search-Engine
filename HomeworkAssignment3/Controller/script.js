@@ -5,6 +5,8 @@
     $(".start").click(Start);
     $(".stop").click(Stop);
     $(".clear-index").click(ClearIndex);
+    $(".clear-queue").click(ClearQueue);
+
     $('.add_button').click(AddUrlToQueue);
     $('.search_for_index').click(SearchResults);
 
@@ -59,6 +61,22 @@
             success: function (msg) {
                 $(".lastTen").empty();
                 ToList(".lastTen", msg);
+            },
+            error: function (msg) {
+                console.log(msg['response']);
+            }
+        });
+    };
+
+    function ClearQueue() {
+        $.ajax({
+            type: "POST",
+            url: "/admin.asmx/ClearQueue",
+            data: "{}",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+
             },
             error: function (msg) {
                 console.log(msg['response']);
@@ -308,8 +326,9 @@
     function ToLog(selector, msg) {
         var data = getData(msg);
 
-        $(selector).empty().append(data);
-
+        jQuery.each(data, function (rec) {
+            $(selector).append("<li>" + data[rec] + "</li>");
+        });
     };
 
     function getData(msg) {
