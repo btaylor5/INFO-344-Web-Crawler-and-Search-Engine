@@ -159,21 +159,25 @@ namespace CrawlingLibrary
                     string title = doc.DocumentNode.SelectSingleNode("//head/title").InnerText;
                    // 
                    //Debug.WriteLine(compressedBody);
-                    string updated = "";
-                    string original = "";
-                    foreach(HtmlNode date in doc.DocumentNode.SelectNodes("//meta[@content]")) {
-                        foreach (var attribute in date.Attributes) {
-                            if(attribute.Value.Equals("og:pubdate")) {
-                                original = attribute.Value;
-                                Debug.WriteLine("Date!: " + original);
-                            } else if(attribute.Value.Equals("pubdate")) {
-                                updated = attribute.Value;
-                                Debug.WriteLine("Date!: " + updated);
-                            }
-                        }
+                    var lastmod = doc.DocumentNode.SelectSingleNode("//meta[@content and @name='lastmod']");
+                    var ogPubdate = doc.DocumentNode.SelectSingleNode("//meta[@content and @name='og:pubdate']");
+                    var pubdate = doc.DocumentNode.SelectSingleNode("//meta[@content and @name='pubdate']");
+                    string time = "NotIncluded";
+                    if (ogPubdate != null)
+                    {
+                        time = ogPubdate.GetAttributeValue("content", "");;
                     }
-                    if (original.Equals("") && !updated.Equals("")) {
-                        original = updated;
+                    else if (pubdate != null)
+                    {
+                        time = pubdate.GetAttributeValue("content", "");;
+                    }
+                    else if (lastmod != null)
+                    {
+                        time = lastmod.GetAttributeValue("content", "");;
+                    }
+                    else
+                    {
+                        Debug.WriteLine("No Meta Tag Match for name = (lastmod || og:pubdate || pubdate)");
                     }
                     //Debug.WriteLine("\n\n\t" + title + "\n\n");
                     //HashSet<string> uniqueLinks = new HashSet<string>();
@@ -209,12 +213,12 @@ namespace CrawlingLibrary
                     }
                     doc.DocumentNode.SelectSingleNode("/html/body").Descendants()
                         .Where(
-                        x => x.Name == "script" || x.Name == "style" || x.Name == "#comment"
+                        x => x.Name == "nav" || x.Name == "header" || x.Name == "footer" || x.Name == "script" || x.Name == "style" || x.Name == "#comment"
                         ).ToList()
                         .ForEach(x => x.Remove());
                     string body = doc.DocumentNode.SelectSingleNode("/html/body").InnerText;
                     string compressedBody = Regex.Replace(body, @"\s+", " ").Trim();
-                    return new CrawledURL(title, url, original, compressedBody);
+                    return new CrawledURL(title, url, time, compressedBody);
                 }
                 else
                 {
