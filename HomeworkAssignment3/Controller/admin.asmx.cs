@@ -38,7 +38,6 @@ namespace Controller
 
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-
         public string Load()
         {
             QueueCommunication.AddCommand("LOAD");
@@ -117,8 +116,56 @@ namespace Controller
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string GetErrorMessages()
         {
-            return new JavaScriptSerializer().Serialize(TableCommunication.GetErrorMessages(1));
+            return new JavaScriptSerializer().Serialize(TableCommunication.GetErrorMessages(10));
         }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string AddUrlToQueue(string url)
+        {
+            QueueCommunication.AddURL(url);
+            return new JavaScriptSerializer().Serialize("[Command] [" + DateTime.Now.ToString() + "] Added " + url + " to crawling Queue");
+
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string IndexCount()
+        {
+           return new JavaScriptSerializer().Serialize(TableCommunication.IndexCountQuery());
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string ErrorCount()
+        {
+            return new JavaScriptSerializer().Serialize(TableCommunication.ErrorCountQuery());
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string SystemStatus()
+        {
+            return new JavaScriptSerializer().Serialize(TableCommunication.LastSystemStatus(1));
+        }
+
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string SystemRunHistory()
+        {
+            return new JavaScriptSerializer().Serialize(TableCommunication.LastSystemStatus(10));
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string SearchResults(string url)
+        {
+            List<string> index = TableCommunication.SearchForIndex(url);
+            return new JavaScriptSerializer().Serialize(index);
+
+        }
+
 
     }
 }

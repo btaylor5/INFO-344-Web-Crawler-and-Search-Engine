@@ -25,7 +25,7 @@ namespace Crawler
     {
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly ManualResetEvent runCompleteEvent = new ManualResetEvent(false);
-        private string[] domainBases = new string[] { "cnn.com" };
+        private string[] domainBases = new string[] { "cnn.com", "bleacherreport.com/nba" };
         WebCrawler crawler;
 
         public override void Run()
@@ -78,21 +78,18 @@ namespace Crawler
 
             int performanceLoop = 20;
             string lastCommand = "STOP";
+            TableCommunication.InsertSystemStatus("IDLE", "Just Booted Up System");
             // TODO: Replace the following with your own logic.
             while (!cancellationToken.IsCancellationRequested)
             {
                 if (performanceLoop >= 0)
                 {
                     performanceLoop--;
-
+                } else {
                     PerformanceMonitor.GetCPU();
                     PerformanceMonitor.GetMemory();
-                    if (performanceLoop == -1)
-                    {
-                        performanceLoop = 20;
-                    }
+                    performanceLoop = 20;
                 }
-
 
                 if (QueueCommunication.PeekCommand() != null)
                 {
@@ -102,32 +99,47 @@ namespace Crawler
                 }
                 if (lastCommand.Equals("LOAD"))
                 {
-                    crawler.PrepareCrawlOfSite("http://www.cnn.com");
+                    TableCommunication.InsertSystemStatus("LOADING", "Started Load");
+                    crawler.PrepareCrawlOfSite("http://www.cnn.com/robots.txt", "cnn.com");
+                    TableCommunication.InsertSystemStatus("LOADING", "Finished Loading");
+                    crawler.PrepareCrawlOfSite("http://www.bleacherreport.txt/robots.txt", "bleacherreport.com/nba");
                     lastCommand = "CRAWL";
                 }
                 if ((QueueCommunication.PeekURL() != null) && lastCommand.Equals("CRAWL"))
                 {
-                    
+                    TableCommunication.InsertSystemStatus("CRAWLING", "System is currently crawling");
                     CloudQueueMessage urlMessage = QueueCommunication.GetMessage();
                     string url = urlMessage.AsString;
 
-                    if (!crawler.Disallowed(url) && !crawler.IsIndexed(url))
+                    bool isIndexed = crawler.IsIndexed(url);
+                    bool disallowed = crawler.Disallowed(url);
+
+                    if (!disallowed && !isIndexed)
                     {
                         CrawledURL info = crawler.CrawlURL(url);
-                        TableCommunication.IndexUrl(info);
+                        if (info != null)
+                        {
+                            TableCommunication.IndexUrl(info);
+                        }
                     }
-                    if (crawler.Disallowed(url))
+                    if (disallowed)
                     {
                         Debug.WriteLine("Disallowed!!! -> " + url);
                     }
-                    if (crawler.IsIndexed(url))
+                    if (isIndexed)
                     {
                         Debug.WriteLine("Link is Already Indexed! " + url);
-                        // To Do Add To Error Board
+                        TableCommunication.InsertError("AlreadyIndexedURL", "This page has already been indexed", url);
                     }
                     QueueCommunication.DeleteMessage(urlMessage);
                 }
-
+                else if(lastCommand.Equals("CRAWL"))
+                {
+                    TableCommunication.InsertSystemStatus("IDLE", "Nothing Left To Process");
+                } else if(lastCommand.Equals("STOP"))
+                {
+                    TableCommunication.InsertSystemStatus("IDLE", "System is currently IDLE");
+                }
                 await Task.Delay(1000);
             }
         }

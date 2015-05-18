@@ -16,7 +16,7 @@
 
         <div class="page-header">
             <h1>Web Crawler Control Panel</h1>
-            <p>State of the WebCrawler: ______________________</p>
+            <p class ="status">Loading...</p>
         </div>
 
     <h2>Counts</h2>
@@ -44,13 +44,13 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td class="indexed_count">
+                            <td class="index_count">
                                 Loading...
                             </td>
-                            <td class="crawled_count">
+                            <td class="crawl_count">
                                 Loading...
                             </td>
-                            <td class="sucess_rate">
+                            <td class="success_rate">
                                 Loading...
                             </td>
                             <td class="queue_count">
@@ -90,49 +90,70 @@
         </div>
     <h2>Controls</h2>
         <div class="row">
-            <div class=" controls col-md-3">
+            <div class="controls col-md-6">
                 <button class="load btn btn-success"><span>Load</span></button>
-            </div>
-            <div class="col-md-3">
                 <button class="start btn btn-primary"><span>Start</span></button>
-            </div>
-            <div class="col-md-3">
                 <button class="stop btn btn-danger"><span>Stop</span></button>
-            </div>
-            <div class="col-md-3">
                 <button class="clear-index btn btn-warning"><span>Clear Index</span></button>
             </div>
-           
+            <div class="col-md-6">
+                <h3>
+                    Add To Crawl Queue
+                </h3>
+                <input type="text" class="add_url" /> <button class="add_button">Add</button>
+            </div>
         </div>
-    <h2>
-        System Log: 
-    </h2>
         <div class="row">
-            <div class="col-md-9">
+            <h3>
+                System Status Log:
+            </h3>
+            <div class="col-md-12">
                 <div class="well well-lg">
                     <ul class="log">
 
                     </ul>
                 </div>
             </div>
-        </div>
-        <h2>
-            Last 10 Indexed:
-        </h2>
+       </div>
         <div class="row">
+            <h3>
+                Last 10 Errors:
+            </h3>
+            <div class="col-md-12">
+                <div class="well well-lg">
+                    <ul class="errors"></ul>
+                </div>
+                <p>Total Errors: <span class="error_count"></span></p>
+            </div>
+        </div>
+        <div class="row">
+            <h3>
+                Last 10 Indexed:
+            </h3>
             <div class="col-md-12">
                 <div class="lastTen well well-lg">
-                    <ul></ul>
+                    <ul>
+
+                    </ul>
                 </div>
             </div>
         </div>
         <div class="row">
             <div class="col-md-12">
                 <h3>
-                    Search By URL
+                    Search Index By URL:
                 </h3>
-                <input type="text" /> <button>Search!</button>
+                <input type="text" class="search_query"/> <button class="search_for_index">Search!</button>
             </div>
+            <div class="col-md-12">
+                <h3>
+                    Search Results:
+                </h3>
+                <div class="search_results well well-lg">
+                    <ul></ul>
+                </div>
+            </div>
+
         </div>
         </div> <!-- /container -->
 </body>

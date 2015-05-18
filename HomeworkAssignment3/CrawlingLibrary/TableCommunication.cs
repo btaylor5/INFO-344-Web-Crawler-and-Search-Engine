@@ -19,19 +19,23 @@ namespace CrawlingLibrary
 
         private static CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
         private static CloudTable indexed = tableClient.GetTableReference("indexed");
-        private static CloudTable queued = tableClient.GetTableReference("QueuedOrProcessed");
+        private static CloudTable touched = tableClient.GetTableReference("touched");
         private static CloudTable disallow = tableClient.GetTableReference("disallowed");
         private static CloudTable performace = tableClient.GetTableReference("performance");
         private static CloudTable errors = tableClient.GetTableReference("errors");
+        private static CloudTable system = tableClient.GetTableReference("system");
+        //private static int indexCounter = IndexCountQuery();
+        //private static int errorCounter = ErrorCountQuery();
 
 
         public static void InitializeCommunication()
         {
             indexed.CreateIfNotExists();
-            queued.CreateIfNotExists();
+            touched.CreateIfNotExists();
             disallow.CreateIfNotExists();
             performace.CreateIfNotExists();
             errors.CreateIfNotExists();
+            system.CreateIfNotExists();;
         }
 
         public static bool IsTouchedLink(string url)
@@ -41,7 +45,7 @@ namespace CrawlingLibrary
                     TableQuery.GenerateFilterCondition("url", QueryComparisons.Equal, url)
                     );
 
-            var results = queued.ExecuteQuery(touchedLink).ToList();
+            var results = touched.ExecuteQuery(touchedLink).ToList();
             bool result = results.Count > 0;
             return result;
         }
@@ -53,7 +57,7 @@ namespace CrawlingLibrary
                     TableQuery.GenerateFilterCondition("url", QueryComparisons.Equal, url)
                     );
 
-            var results = queued.ExecuteQuery(touchedLink).ToList();
+            var results = touched.ExecuteQuery(touchedLink).ToList();
             return results;
         }
 
@@ -104,11 +108,12 @@ namespace CrawlingLibrary
 
         public static void TouchLink(string url)
         {
-            TouchedURL touched = new TouchedURL(url);
-            TableOperation operation = TableOperation.Insert(touched);
+            TouchedURL site = new TouchedURL(url);
+            TableOperation operation = TableOperation.Insert(site);
             try
             {
-                queued.Execute(operation);
+                touched.Execute(operation);
+                
             }
             catch (StorageException se)
             {
@@ -128,7 +133,6 @@ namespace CrawlingLibrary
             {
                 Debug.WriteLine("[Indexed] " + url.Title + " -> " + url.URL + "\n");
                 indexed.Execute(insertOperation);
-
             }
             catch (StorageException se)
             {
@@ -162,7 +166,7 @@ namespace CrawlingLibrary
             {
                 foreach (CrawledURL entity in indexed.ExecuteQuery(rangeQuery))
                 {
-                    string combo = "[Title: " + entity.Title + "]";
+                    string combo = "[URL: " + entity.URL + "]";
                     answer.Add(combo);
                     //Debug.WriteLine(combo);
                 }
@@ -183,8 +187,6 @@ namespace CrawlingLibrary
 
             return answer;
         }
-
-        
 
         public static bool RemoveURLHistory()
         {
@@ -251,8 +253,79 @@ namespace CrawlingLibrary
                     TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.GreaterThanOrEqual, ChronHelper.ChronoCompareString())
                 ).Take(maxResults);
 
-            var results = errors.ExecuteQuery(lastErrors).Select(x => x.ToString()).ToList();
+            var results = errors.ExecuteQuery(lastErrors).Select(x => x.ErrorString()).ToList();
+
             return results;
         }
+
+        public static int IndexCountQuery()
+        {
+            TableQuery<CrawledURL> allEntries = new TableQuery<CrawledURL>()
+                .Where(
+                    TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.LessThan, DateTime.Now.AddDays(1))
+                    );
+            var total = indexed.ExecuteQuery(allEntries).ToList().Count;
+            return total;
+        }
+
+        public static void InsertSystemStatus(string status, string message)
+        {
+
+            TableQuery<SystemStatus> lastChange = new TableQuery<SystemStatus>()
+                .Where(
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThanOrEqual, ChronHelper.ChronoCompareString())
+                ).Take(1);
+
+            var lastStatus = system.ExecuteQuery(lastChange).Select(x => x).ToList();
+            SystemStatus old = null;
+            if (lastStatus.Count > 0)
+            {
+                old = lastStatus[0];
+            }
+            SystemStatus sys = new SystemStatus(status, message);
+            TableOperation operation;
+            if (old != null && old.Equals(sys))
+            {
+                operation = TableOperation.Delete(old);
+                system.Execute(operation);
+            }
+            operation = TableOperation.Insert(sys);
+            system.Execute(operation);
+        }
+
+        public static List<string> LastSystemStatus(int maxResults)
+        {
+            TableQuery<SystemStatus> lastChange = new TableQuery<SystemStatus>()
+                .Where(
+                    TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThanOrEqual, ChronHelper.ChronoCompareString())
+                ).Take(maxResults);
+
+            var results = system.ExecuteQuery(lastChange).Select(x => x.StatusString()).ToList();
+
+            return results;
+        }
+
+
+        public static int ErrorCountQuery()
+        {
+            TableQuery<ErrorEntity> allEntries = new TableQuery<ErrorEntity>()
+                .Where(
+                    TableQuery.GenerateFilterConditionForDate("Timestamp", QueryComparisons.LessThan, DateTime.Now.AddDays(1))
+                    );
+            var total = errors.ExecuteQuery(allEntries).ToList().Count;
+            return total;
+        }
+
+        public static List<string> SearchForIndex(string url)
+        {
+            TableQuery<CrawledURL> lastChange = new TableQuery<CrawledURL>()
+                .Where(
+                    TableQuery.GenerateFilterCondition("URL", QueryComparisons.Equal, url)
+                );
+
+            var results = indexed.ExecuteQuery(lastChange).Select(x => "[Title]: " + x.Title + " [Last-Modified': ").ToList();
+            return results;
+        }
+
     }
 }

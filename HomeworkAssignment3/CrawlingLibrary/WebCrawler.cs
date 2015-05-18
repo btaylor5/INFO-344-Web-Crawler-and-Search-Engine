@@ -28,11 +28,6 @@ namespace CrawlingLibrary
         private List<string> toVisit;
         private int currentDomainBase = 0;
 
-        //private static CloudQueueClient queueClient = storageAccount.CreateCloudQueueClient();
-        //private static CloudQueue queue = queueClient.GetQueueReference("todo");
-
-        //private static CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-        //private static CloudTable table = tableClient.GetTableReference("urls");
 
         public WebCrawler(string[] domainBase)
         {
@@ -46,10 +41,10 @@ namespace CrawlingLibrary
             toVisit = new List<string>();
         }
 
-        public void PrepareCrawlOfSite(string url)
+        public void PrepareCrawlOfSite(string url, string domainBase)
         {
             Debug.WriteLine("Crawling Robot.txt");
-            Dictionary<string, URLStatus.Status> robotResults = ParseRobotTxtIfFound(url);
+            Dictionary<string, URLStatus.Status> robotResults = ParseRobotTxtIfFound(url, domainBase);
                         // Have A Dictioray with all of the sitemap paths, and allowable, and disallowed
             foreach (KeyValuePair<string, URLStatus.Status> entry in robotResults)
             {
@@ -75,8 +70,6 @@ namespace CrawlingLibrary
             // Todo: Recurse Through SiteMaps that lead to sitemaps, be aware that they wil throw 404
             // Todo: Check SiteMaps for the past tqo months
 
-            try
-            {
                 WebClient client = new WebClient();
                 Stream stream = client.OpenRead(url);
 
@@ -134,11 +127,6 @@ namespace CrawlingLibrary
                     }
                 }
             }
-            catch (HtmlWebException ex)
-            {
-                TableCommunication.InsertError("404", ex.Message, url);
-            }
-        }
 
         public bool IsOld(DateTime time)
         {
@@ -147,70 +135,79 @@ namespace CrawlingLibrary
 
         public CrawledURL CrawlURL(string url)
         {
-             
-            HtmlWeb Webget = new HtmlWeb();
-            HtmlDocument doc = Webget.Load(url);
 
-
-            if (sameDomain(url))
+            try
             {
-                string title = doc.DocumentNode.SelectSingleNode("//head/title").InnerText;
 
-                //Debug.WriteLine("\n\n\t" + title + "\n\n");
-                HashSet<string> uniqueLinks = new HashSet<string>();
-                foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//a[@href]"))
+                HtmlWeb Webget = new HtmlWeb();
+                HtmlDocument doc = Webget.Load(url);
+                Webget.StatusCode.GetTypeCode();
+
+                if (!Webget.StatusCode.ToString().Equals(System.Net.HttpStatusCode.OK.ToString()))
                 {
-                    string path = link.GetAttributeValue("href", null);
-
-                    path = FixFilePath(url, path);
-                    //Debug.WriteLine("Fixed Path:" + path);
-
-                    if(sameDomain(path) && !Disallowed(path) && !TableCommunication.IsTouchedLink(path)) {
-                        Debug.WriteLine("New Link, Touching: " + url);
-                        TableCommunication.TouchLink(path);
-                        QueueCommunication.AddURL(path);
-                    }
-                    else if (TableCommunication.IsTouchedLink(path))
-                    {
-                        Debug.WriteLine("Already Touched: " + path);
-                    }
-                    else if (Disallowed(path))
-                    {
-                        Debug.WriteLine("Disallowed: " + path);
-                    }
-                    else if (!sameDomain(path))
-                    {
-                        Debug.WriteLine("Not the Same Domain: " + path);
-                    }
-                    else
-                    {
-                        Debug.WriteLine("Something Else Went wrong in WorkerRole: " + path);
-                    }
+                    Debug.WriteLine("");
+                    TableCommunication.InsertError(Webget.StatusCode.ToString(), "Link Was Bad", url);
+                    return null;
                 }
-                return new CrawledURL(title, url);
+
+                if (sameDomain(url))
+                {
+                    string title = doc.DocumentNode.SelectSingleNode("//head/title").InnerText;
+
+                    //Debug.WriteLine("\n\n\t" + title + "\n\n");
+                    HashSet<string> uniqueLinks = new HashSet<string>();
+                    foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//a[@href]"))
+                    {
+                        string path = link.GetAttributeValue("href", null);
+
+                        path = FixFilePath(url, path);
+                        //Debug.WriteLine("Fixed Path:" + path);
+
+                        if (sameDomain(path) && !Disallowed(path) && !TableCommunication.IsTouchedLink(path))
+                        {
+                            Debug.WriteLine("New Link, Touching and Adding to Queue: " + path);
+                            TableCommunication.TouchLink(path);
+                            QueueCommunication.AddURL(path);
+                        }
+                        else if (TableCommunication.IsTouchedLink(path))
+                        {
+                            Debug.WriteLine("Already Touched: " + path);
+                        }
+                        else if (Disallowed(path))
+                        {
+                            Debug.WriteLine("Disallowed: " + path);
+                        }
+                        else if (!sameDomain(path))
+                        {
+                            Debug.WriteLine("Not the Same Domain: " + path);
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Something Else Went wrong in WorkerRole: " + path);
+                        }
+                    }
+                    return new CrawledURL(title, url);
+                }
+                else
+                {
+                    return null;
+                }
             }
-            else
+            catch (WebException ex)
             {
+                TableCommunication.InsertError(ex.Status.ToString(), ex.Message, url);
                 return null;
             }
         }
 
-        private string GetHTML(string url)
-        {
-            using (WebClient client = new WebClient())
-            {
-                return client.DownloadString(url);
-            }
-        }
-
         
-        public Dictionary<string, URLStatus.Status> ParseRobotTxtIfFound(string url)
+        public Dictionary<string, URLStatus.Status> ParseRobotTxtIfFound(string url, string domainBase)
         {
             Dictionary<string, URLStatus.Status> urlBank = new Dictionary<string, URLStatus.Status>();
             WebClient client = new WebClient();
             try
             {
-                Stream stream = client.OpenRead(url + "/robots.txt");
+                Stream stream = client.OpenRead(url);
                 using (StreamReader reader = new StreamReader(stream))
                 {
                     string line;
@@ -232,7 +229,7 @@ namespace CrawlingLibrary
                         else if (line.StartsWith("Disallow:"))
                         {
                             string result = url + cutBetweenStrings(line, "Disallow:", "#");
-                            TableCommunication.AddToDisallow(result, allowedDomainBases[currentDomainBase]);
+                            TableCommunication.AddToDisallow(result, domainBase);
                             urlBank.Add(result, URLStatus.Status.Disallow);
                         }
                         else if (line.StartsWith("Allow:"))
