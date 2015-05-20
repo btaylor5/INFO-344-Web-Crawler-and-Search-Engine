@@ -15,39 +15,56 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using System.Xml.XPath;
 
 namespace CrawlingLibrary
 {
     public class WebCrawler
     {
 
-        private static CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
+        //private static CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
 
-        private List<string> allowedDomainBases;
+        public List<string> allowedDomainBases { get; set; }
         private HashSet<string> disallowedList;
-        private List<string> siteMaps;
+        private HashSet<string> touched;
         private List<string> toVisit;
-        private int currentDomainBase;
 
 
-        public WebCrawler(string[] domainBase)
+        /// <summary>
+        /// Constructs a WebCrawler to be used for parseing XML Sitemaps and crawling urls
+        /// </summary>
+        public WebCrawler()
         {
-            currentDomainBase = 0;
             allowedDomainBases = new List<string>();
-            foreach (string domain in domainBase)
-            {
-                allowedDomainBases.Add(domain);
-            }
-            disallowedList = TableCommunication.DisallowList(allowedDomainBases[currentDomainBase]);
-            siteMaps = new List<string>();
+            allowedDomainBases.Add("cnn.com/");
+            allowedDomainBases.Add("bleacherreport.com/");
+            disallowedList = TableCommunication.DisallowList();
             toVisit = new List<string>();
+            touched = new HashSet<string>();
+        }
+        
+
+        /// <summary>
+        /// Adds a domain base meaning what domains can the links be from.
+        /// </summary>
+        /// <param name="domainBase"></param>
+        public void AddDomainBase(string domainBase)
+        {
+            allowedDomainBases.Add(domainBase);
         }
 
+
+        /// <summary>
+        /// loads up robots.txt and collects sitemaps and disallowed urls
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="domainBase"></param>
         public void PrepareCrawlOfSite(string url, string domainBase)
         {
+            AddDomainBase(domainBase);
             Debug.WriteLine("Crawling Robot.txt");
             Dictionary<string, URLStatus.Status> robotResults = ParseRobotTxtIfFound(url, domainBase);
-                        // Have A Dictioray with all of the sitemap paths, and allowable, and disallowed
+
             foreach (KeyValuePair<string, URLStatus.Status> entry in robotResults)
             {
                 if (entry.Value == URLStatus.Status.Allow)
@@ -60,83 +77,131 @@ namespace CrawlingLibrary
                 }
                 else if (entry.Value == URLStatus.Status.Sitemap)
                 {
-                    AddSiteMapToQueue(entry.Key);
+                    CrawlSiteMap(entry.Key);
                 }
             }
+            if (!robotResults.ContainsValue(URLStatus.Status.Sitemap))
+            {
+                QueueCommunication.AddURL(url.Replace("/robots.txt", ""));
+            }
             Debug.WriteLine("Done Crawling Robot.txt");
-            currentDomainBase++;
         }
 
-        private void AddSiteMapToQueue(string url)
+        /// <summary>
+        /// Crawls through an XML sitemap link
+        /// </summary>
+        /// <param name="xmlLink"></param>
+        private void CrawlSiteMap(string xmlLink)
         {
-            // Todo: Use Table For Storing dissallowed
-            // Todo: Recurse Through SiteMaps that lead to sitemaps, be aware that they wil throw 404
-            // Todo: Check SiteMaps for the past tqo months
+            WebClient client = new WebClient();
+            Stream stream = client.OpenRead(xmlLink);
 
-                WebClient client = new WebClient();
-                Stream stream = client.OpenRead(url);
-
-                using (XmlReader reader = XmlReader.Create(stream))
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(stream);
+            XmlNodeList siteMapList = xmlDoc.DocumentElement.GetElementsByTagName("sitemap");
+            XmlNodeList urlList = xmlDoc.DocumentElement.GetElementsByTagName("url");
+            if (siteMapList.Count > 0)
+            {
+                foreach (XmlNode node in siteMapList)
                 {
-                    //<url>
-                    //  <loc>
-                    //THE LINK
-                    //  </loc>
-                    //  <ton of shiit />
-                    //<url>
-                    string schemaUrl = "";
-                    DateTime time = DateTime.MinValue;
-                    while (reader.Read())
+                    var loc = node["loc"];
+                    var date = node["lastmod"];
+
+                    if (date != null && loc != null)
                     {
-                        //Debug.WriteLine("For URL: " + url + " ->  " + reader.Name);
-                        if (reader.Name.Equals("loc"))
-                        {
-                            schemaUrl = reader.ReadElementString();
-                        }
-                        if (reader.Name.Equals("lastmod"))
-                        {
-                            time = reader.ReadElementContentAsDateTime();
-                        }
-                        else if (reader.Name.Equals("<news:publication_date>"))
-                        {
-                            time = reader.ReadElementContentAsDateTime();
-                        }
-                        else if (!schemaUrl.Equals("") && (reader.Name.Equals("sitemap") || reader.Name.Equals("url")))
-                        {
-                            Debug.WriteLine("No Time Found");
-                            time = DateTime.Now;
-                        }
-                        if (!schemaUrl.Equals("") && !IsOld(time))
-                        {
-                            if (schemaUrl.EndsWith(".xml"))
+                        DateTime published = Convert.ToDateTime(date.InnerText);
+                        DateTime old = DateTime.Now.AddMonths(-2);
+                        if(published > old ) {
+                            string sitemap = loc.InnerText;
+                            if (sitemap.EndsWith(".xml"))
                             {
-                                AddSiteMapToQueue(schemaUrl);
+                                CrawlSiteMap(sitemap);
                             }
-                            //else if (!TableCommunication.IsTouchedLink(schemaUrl))
-                            //{
-                                TableCommunication.TouchLink(schemaUrl);
-                                Debug.WriteLine("[With Time]: " + time.ToString());
-                                QueueCommunication.AddURL(schemaUrl);
-                            //}
-                            schemaUrl = "";
-                            time = DateTime.MinValue;
+                            else
+                            {
+                                QueueCommunication.AddURL(sitemap);
+                            }
                         }
-                        else if (!schemaUrl.Equals("") && IsOld(time) && time != DateTime.MinValue)
+                        else
                         {
-                            Debug.WriteLine("[Too Old, But Touching]: " + time);
-                            TableCommunication.TouchLink(schemaUrl);
-                            schemaUrl = "";
-                            time = DateTime.MinValue;
+                            Debug.WriteLine("Too Old! Cut Off at: " + old + " Compared With:" + published);
+                        }
+                    } else if (loc != null){
+                        string sitemap = loc.InnerText;
+                        touched.Add(sitemap);
+                        QueueCommunication.AddURL(sitemap);
+                    }
+                }
+            } else if (urlList.Count > 0) {
+                foreach (XmlNode node in urlList)
+                {
+                    var loc = node["loc"];
+                    var date = node["lastmod"];
+
+                    if (date != null && loc != null)
+                    {
+                        DateTime published = Convert.ToDateTime(date.InnerText);
+                        DateTime old = DateTime.Now.AddMonths(-2);
+                        if (published > old)
+                        {
+                            string sitemap = loc.InnerText;
+                            touched.Add(sitemap);
+                            QueueCommunication.AddURL(sitemap);
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Too Old! Cut Off at: " + old + " Compared With:" + published);
+                        }
+                    }
+                    else if (loc != null && date == null)
+                    {
+                        var news = node["news:news"];
+                        if (news != null)
+                        {
+                            news = news["news:publication_date"];
+                        }
+                        if (news != null)
+                        {
+                            DateTime published = Convert.ToDateTime(news.InnerText);
+                            DateTime old = DateTime.Now.AddMonths(-2);
+                            if (published > old)
+                            {
+                                string sitemap = loc.InnerText;
+                                touched.Add(sitemap);
+                                QueueCommunication.AddURL(sitemap);
+                            }
+                            else
+                            {
+                                Debug.WriteLine("Too Old! Cut Off at: " + old + " Compared With:" + published);
+                            }
+                        } else
+                        {
+                            string url = loc.InnerText;
+                            touched.Add(url);
+                            QueueCommunication.AddURL(url);
                         }
                     }
                 }
             }
+        }
 
+
+        /// <summary>
+        /// returns whether a time is within the past two months
+        /// </summary>
+        /// <param name="time"></param>
+        /// <returns></returns>
         public bool IsOld(DateTime time)
         {
             return (time <= DateTime.Now.AddMonths(-2));
         }
 
+
+        /// <summary>
+        /// Crawls the URL and adds the links found to be processed later. Will pull out important body information and published date
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public CrawledURL CrawlURL(string url)
         {
 
@@ -157,8 +222,8 @@ namespace CrawlingLibrary
                 if (sameDomain(url))
                 {
                     string title = doc.DocumentNode.SelectSingleNode("//head/title").InnerText;
-                   // 
-                   //Debug.WriteLine(compressedBody);
+                   
+                    //looks for three variations in possible dates
                     var lastmod = doc.DocumentNode.SelectSingleNode("//meta[@content and @name='lastmod']");
                     var ogPubdate = doc.DocumentNode.SelectSingleNode("//meta[@content and @name='og:pubdate']");
                     var pubdate = doc.DocumentNode.SelectSingleNode("//meta[@content and @name='pubdate']");
@@ -179,22 +244,21 @@ namespace CrawlingLibrary
                     {
                         Debug.WriteLine("No Meta Tag Match for name = (lastmod || og:pubdate || pubdate)");
                     }
-                    //Debug.WriteLine("\n\n\t" + title + "\n\n");
-                    //HashSet<string> uniqueLinks = new HashSet<string>();
+
+                    //loops through every link adding to queueu
                     foreach (HtmlNode link in doc.DocumentNode.SelectNodes("//a[@href]"))
                     {
                         string path = link.GetAttributeValue("href", null);
 
                         path = FixFilePath(url, path);
-                        //Debug.WriteLine("Fixed Path:" + path);
 
-                        if (sameDomain(path) && !Disallowed(path) && !TableCommunication.IsTouchedLink(path))
+                        if (sameDomain(path) && !Disallowed(path) && !touched.Contains(path))
                         {
                             Debug.WriteLine("New Link, Touching and Adding to Queue: " + path);
-                            TableCommunication.TouchLink(path);
+                            touched.Add(path);
                             QueueCommunication.AddURL(path);
                         }
-                        else if (TableCommunication.IsTouchedLink(path))
+                        else if (touched.Contains(path))
                         {
                             Debug.WriteLine("Already Touched: " + path);
                         }
@@ -211,14 +275,29 @@ namespace CrawlingLibrary
                             Debug.WriteLine("Something Else Went wrong in WorkerRole: " + path);
                         }
                     }
-                    doc.DocumentNode.SelectSingleNode("/html/body").Descendants()
-                        .Where(
-                        x => x.Name == "nav" || x.Name == "header" || x.Name == "footer" || x.Name == "script" || x.Name == "style" || x.Name == "#comment"
-                        ).ToList()
-                        .ForEach(x => x.Remove());
-                    string body = doc.DocumentNode.SelectSingleNode("/html/body").InnerText;
+                    string body;
+                    // If it's an article, not a homepage, it will pickout the article text
+                    StringBuilder total = new StringBuilder();
+                    doc.DocumentNode.Descendants().Where(n =>
+                        n.Attributes.Contains("class") && n.Attributes["class"].Value.Split(' ').Any(b => b.Equals("zn-body__paragraph"))
+                    ).ToList()
+                    .ForEach(x => total.Append(x.InnerText + " "));
+
+                    if (total.Length > 0)
+                    {
+                        body = total.ToString();
+                    }
+                    else //otherwise it will grab whatever it has access to
+                    {
+                        doc.DocumentNode.SelectSingleNode("/html/body").Descendants()
+                       .Where(
+                       x => x.Name == "nav" || x.Name == "header" || x.Name == "footer" || x.Name == "script" || x.Name == "style" || x.Name == "#comment"
+                       ).ToList()
+                       .ForEach(x => x.Remove());
+                        body = doc.DocumentNode.SelectSingleNode("/html/body").InnerText;
+                    }
                     string compressedBody = Regex.Replace(body, @"\s+", " ").Trim();
-                    return new CrawledURL(title, url, time, compressedBody);
+                    return new CrawledURL(TableCommunication.SanitizeForTable(title), url, time, compressedBody);
                 }
                 else
                 {
@@ -226,13 +305,18 @@ namespace CrawlingLibrary
                 }
             }
             catch (WebException ex)
-            {
+            {   //track web exception
                 TableCommunication.InsertError(ex.Status.ToString(), ex.Message, url);
                 return null;
             }
         }
 
-        
+        /// <summary>
+        /// Parses the robots.txt to collect sitempas and disallowed urls
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="domainBase"></param>
+        /// <returns></returns>
         public Dictionary<string, URLStatus.Status> ParseRobotTxtIfFound(string url, string domainBase)
         {
             Dictionary<string, URLStatus.Status> urlBank = new Dictionary<string, URLStatus.Status>();
@@ -259,7 +343,7 @@ namespace CrawlingLibrary
                         {
                             string sitemapPath = cutBetweenStrings(line, "Sitemap:", "#");
                            
-                            if (!bleacherReportHardCode || (bleacherReportHardCode && sitemapPath.Contains("nba.xml")) )
+                            if (!bleacherReportHardCode || (bleacherReportHardCode && sitemapPath.Contains("nba.xml")) && !urlBank.ContainsKey(sitemapPath))
                             {
                                 urlBank.Add(sitemapPath, URLStatus.Status.Sitemap);
                             }
@@ -268,14 +352,19 @@ namespace CrawlingLibrary
                         {
                             string result = urlRoot + cutBetweenStrings(line, "Disallow:", "#");
                             TableCommunication.AddToDisallow(result, domainBase);
-                            urlBank.Add(result, URLStatus.Status.Disallow);
+                            if (!urlBank.ContainsKey(result))
+                            {
+                                urlBank.Add(result, URLStatus.Status.Disallow);
+                            }
                         }
                         else if (line.StartsWith("Allow:"))
                         {
                             string result = url + cutBetweenStrings(line, "Allow:", "#");
-
-                            urlBank.Add(result, URLStatus.Status.Allow);
-                            Debug.WriteLine(result);
+                            if (urlBank.ContainsKey(result))
+                            {
+                                urlBank.Add(result, URLStatus.Status.Allow);
+                            }
+                            Debug.WriteLine("Allow: " + result);
                         }
                         else if (line.StartsWith("#"))
                         {
@@ -328,6 +417,11 @@ namespace CrawlingLibrary
             }
         }
 
+        /// <summary>
+        /// returns whether a link is disallowed
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public bool Disallowed(string url)
         {
             foreach (string disallowed in disallowedList)
@@ -340,13 +434,28 @@ namespace CrawlingLibrary
             return false;
         }
 
+        /// <summary>
+        /// Returns whether a url has been indexed yet
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public bool IsIndexed(string url)
         {
             return TableCommunication.IndexedYet(url);
         }
 
+
+        /// <summary>
+        /// returns whether ot not a given link is from the same domain
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         public bool sameDomain(string url)
         {
+            if (url.EndsWith(".com") || url.EndsWith(".net") || url.EndsWith(".org"))
+            {
+                url = url + "/";
+            }
             foreach (string domain in allowedDomainBases)
             {
                 if (url.Contains(domain)) 
@@ -357,6 +466,12 @@ namespace CrawlingLibrary
             return false;
         }
 
+        /// <summary>
+        /// will fix URLs when they are relative
+        /// </summary>
+        /// <param name="currentURL"></param>
+        /// <param name="path"></param>
+        /// <returns></returns>
         public string FixFilePath(string currentURL, string path)
         {
            if (path.StartsWith("//") || path.StartsWith("www."))
@@ -365,7 +480,17 @@ namespace CrawlingLibrary
            }
            else if (path.StartsWith("/"))
            {
-               return cutBetweenStrings(currentURL, "", ".com") + ".com" + path;
+               if (currentURL.Contains(".com")) {
+                   return cutBetweenStrings(currentURL, "", ".com") + ".com" + path;
+               }
+               else if (currentURL.Contains(".org"))
+               {
+                   return cutBetweenStrings(currentURL, "", ".org") + ".org" + path;
+               }
+               else
+               {
+                   return cutBetweenStrings(currentURL, "", ".net") + ".net" + path;
+               }
            }
            {
                Debug.WriteLine("FilePath is Perfect: " + path);

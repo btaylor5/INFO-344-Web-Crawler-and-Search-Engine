@@ -27,7 +27,10 @@ namespace Controller
     public class admin : System.Web.Services.WebService
     {
 
-
+        /// <summary>
+        /// The start command. Will begin to process the urls in the queue
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string Start()
@@ -36,6 +39,10 @@ namespace Controller
             return new JavaScriptSerializer().Serialize("[Command] [" + DateTime.Now.ToString() + "] Start Crawling");
         }
 
+        /// <summary>
+        /// Load Command. Will start to load the predefined sites CNN and BleacherReport
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string Load()
@@ -44,6 +51,10 @@ namespace Controller
             return new JavaScriptSerializer().Serialize("[Command] [" + DateTime.Now.ToString() + "] Load Crawler");
         }
 
+        /// <summary>
+        /// Will stop crawling after it completes its current crawl
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string Stop()
@@ -52,7 +63,10 @@ namespace Controller
             return new JavaScriptSerializer().Serialize("[Command] [" + DateTime.Now.ToString() + "] Stop Crawling");
         }
 
-
+        /// <summary>
+        /// Returns the Last Ten indexed urls
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public List<string> LastTenVisitedUrls()
@@ -61,6 +75,10 @@ namespace Controller
             return answer;
         }
 
+        /// <summary>
+        /// Removes history of indexed and errors
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string ClearIndex()
@@ -71,20 +89,39 @@ namespace Controller
             return "Deleting Indices of Crawled URL";
         }
 
+
+        //[WebMethod]
+        //[ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        //public bool GetResults(string url)
+        //{
+        //    List<string> bank = new List<string>();
+        //    List<TouchedURL> answer = TableCommunication.GetList(url);
+        //    foreach (TouchedURL one in answer)
+        //    {
+        //        bank.Add(url);
+        //    }
+        //    int size = bank.Count;
+        //    return size > 0;
+        //}
+
+        /// <summary>
+        /// Loads the request into the cutom crawler
+        /// </summary>
+        /// <param name="crawl_string">"format is "http://www.path.com/to/robot.txt=path.com/"</param>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public bool GetResults(string url)
+        public void CustomCrawl(string crawl_string)
         {
-            List<string> bank = new List<string>();
-            List<TouchedURL> answer = TableCommunication.GetList(url);
-            foreach (TouchedURL one in answer)
-            {
-                bank.Add(url);
-            }
-            int size = bank.Count;
-            return size > 0;
+            Debug.WriteLine("yup" + crawl_string);
+            QueueCommunication.AddLoader(crawl_string);
+            QueueCommunication.AddCommand("LOAD_CUSTOM_ROOT");
         }
 
+
+        /// <summary>
+        /// returns the available memory left. Will not respond during loading function
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string GetMemory()
@@ -92,6 +129,10 @@ namespace Controller
             return new JavaScriptSerializer().Serialize(TableCommunication.GetCounter(1, "Memory"));
         }
 
+        /// <summary>
+        /// returns the % CPU utilization. Will not respond during loading function
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string GetCPU()
@@ -99,6 +140,11 @@ namespace Controller
             return new JavaScriptSerializer().Serialize(TableCommunication.GetCounter(1, "CPU"));
         }
 
+
+        /// <summary>
+        /// returns how many urls are left to process
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string LeftToProcess()
@@ -106,6 +152,10 @@ namespace Controller
             return new JavaScriptSerializer().Serialize(QueueCommunication.URLCount());
         }
 
+        /// <summary>
+        /// returns a the last 10 error messages
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string GetErrorMessages()
@@ -113,15 +163,24 @@ namespace Controller
             return new JavaScriptSerializer().Serialize(TableCommunication.GetErrorMessages(10));
         }
 
+        /// <summary>
+        /// Adds a specific URL to be crawled
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string AddUrlToQueue(string url)
         {
             QueueCommunication.AddURL(url);
             return new JavaScriptSerializer().Serialize("[Command] [" + DateTime.Now.ToString() + "] Added " + url + " to crawling Queue");
-
         }
 
+
+        /// <summary>
+        /// returns how many urls have been indexed
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string IndexCount()
@@ -129,6 +188,10 @@ namespace Controller
            return new JavaScriptSerializer().Serialize(TableCommunication.IndexCountQuery());
         }
 
+        /// <summary>
+        /// returns how many errors have occured
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string ErrorCount()
@@ -136,6 +199,10 @@ namespace Controller
             return new JavaScriptSerializer().Serialize(TableCommunication.ErrorCountQuery());
         }
 
+        /// <summary>
+        /// reuturns how the last system status recorded
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string SystemStatus()
@@ -143,7 +210,10 @@ namespace Controller
             return new JavaScriptSerializer().Serialize(TableCommunication.LastSystemStatus(1));
         }
 
-
+        /// <summary>
+        /// returns the last 10 system history events
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string SystemRunHistory()
@@ -151,6 +221,11 @@ namespace Controller
             return new JavaScriptSerializer().Serialize(TableCommunication.LastSystemStatus(10));
         }
 
+        /// <summary>
+        /// returns the search results for a url
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string SearchResults(string url)
@@ -160,6 +235,10 @@ namespace Controller
 
         }
 
+        /// <summary>
+        /// cleared the queue of urls to be processed
+        /// </summary>
+        /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string ClearQueue()

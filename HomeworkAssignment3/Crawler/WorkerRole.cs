@@ -25,7 +25,7 @@ namespace Crawler
     {
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly ManualResetEvent runCompleteEvent = new ManualResetEvent(false);
-        private string[] domainBases = new string[] { "cnn.com/", "bleacherreport.com/" };
+        //private string[] domainBases = new string[] { "cnn.com/", "bleacherreport.com/" };
         WebCrawler crawler;
 
         public override void Run()
@@ -52,7 +52,7 @@ namespace Crawler
             QueueCommunication.InitializeCommunication();
             TableCommunication.InitializeCommunication();
 
-            crawler = new WebCrawler(domainBases);
+            crawler = new WebCrawler();
 
             bool result = base.OnStart();
 
@@ -99,11 +99,31 @@ namespace Crawler
                 }
                 if (lastCommand.Equals("LOAD"))
                 {
-                    TableCommunication.InsertSystemStatus("LOADING", "Started Load");
+                    TableCommunication.InsertSystemStatus("LOADING", "Started AutoLoad of CNN and BleacherReport");
                     crawler.PrepareCrawlOfSite("http://www.cnn.com/robots.txt", "cnn.com/");
-                    TableCommunication.InsertSystemStatus("LOADING", "Finished Loading");
                     crawler.PrepareCrawlOfSite("http://bleacherreport.com/robots.txt", "bleacherreport.com/");
+                    TableCommunication.InsertSystemStatus("LOADING", "Finished AutoLoad of CNN and BleacherReport");
                     lastCommand = "CRAWL";
+
+                }
+                if (lastCommand.Equals("LOAD_CUSTOM_ROOT") && QueueCommunication.PeekLoadCustom() != null)
+                {
+                    CloudQueueMessage message = QueueCommunication.GetLoader();
+                    string combo = message.AsString;
+                    string[] both = combo.Split('=');
+                    if (both.Length == 2) {
+                        TableCommunication.InsertSystemStatus("LOADING", "Started Loading for the custom domain base: " + both[1]);
+                        crawler.PrepareCrawlOfSite(both[0], both[1]);
+                        QueueCommunication.DeleteLoaderMessage(message);
+                        lastCommand = "CRAWL";
+                    }
+                    else
+                    {
+                        TableCommunication.InsertSystemStatus("MALFORMATTED_LOAD", "Please Input the proper prereqs to crawl a site");
+                        lastCommand = "IDLE";
+                    }
+
+
                 }
                 if ((QueueCommunication.PeekURL() != null) && lastCommand.Equals("CRAWL"))
                 {
@@ -140,7 +160,7 @@ namespace Crawler
                 {
                     TableCommunication.InsertSystemStatus("IDLE", "System is currently IDLE");
                 }
-                await Task.Delay(1000);
+                await Task.Delay(50);
             }
         }
 

@@ -9,6 +9,8 @@
 
     $('.add_button').click(AddUrlToQueue);
     $('.search_for_index').click(SearchResults);
+    $('.custom_crawl').click(CustomCrawl);
+
 
 
 
@@ -24,7 +26,7 @@
         var total = errors + indexed
         $(".crawl_count").empty().append(total);
 
-        var percentage = Math.floor(parseInt(indexed / total)) * 100;
+        var percentage = Math.floor(parseInt(indexed / total * 100));
         console.log(total);
         $(".success_rate").empty().append(percentage + "%");
     }, 10000);
@@ -56,6 +58,26 @@
             type: "POST",
             url: "/admin.asmx/LastTenVisitedUrls",
             data: "{}",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                $(".lastTen").empty();
+                ToList(".lastTen", msg);
+            },
+            error: function (msg) {
+                console.log(msg['response']);
+            }
+        });
+    };
+
+    function CustomCrawl() {
+        $.ajax({
+            type: "POST",
+            url: "/admin.asmx/CustomCrawl",
+            data: JSON.stringify
+                ({
+                    'crawl_string': ($(".crawl_request").val() + "=" + $(".crawl_bound").val())
+                }),
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (msg) {

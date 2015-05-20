@@ -107,43 +107,11 @@
             </div>
         </div>
         <div class="row">
-            <h3>
-                System Status Log:
-            </h3>
-            <div class="col-md-12">
-                <div class="well well-lg">
-                    <ul class="log">
-
-                    </ul>
-                </div>
-            </div>
-       </div>
-        <div class="row">
-            <h3>
-                Last 10 Indexed:
-            </h3>
-            <div class="col-md-6">
-                <div class="lastTen well well-lg">
-                    <ul></ul>
-                </div>
-            </div>
-            <h3>
-                Last 10 Errors:
-            </h3>
-            <div class="col-md-6">
-                <div class="well well-lg">
-                    <ul class="errors"></ul>
-                </div>
-                <p>Total Errors: <span class="error_count"></span></p>
-            </div>
-        </div>
-            
-        <div class="row">
             <div class="col-md-12">
                 <h3>
                     Search Index By URL:
                 </h3>
-                <input type="text" class="search_query"/> <button class="search_for_index">Search!</button>
+                <input type="text" class="search_query" /> <button class="search_for_index">Search!</button>
             </div>
             <div class="col-md-12">
                 <h3>
@@ -154,6 +122,48 @@
                 </div>
             </div>
 
+        </div>
+
+        <div class="row">
+            <h3>
+                System Status Log:
+            </h3>
+            <div class="col-md-6">
+                <div class="well well-lg">
+                    <ul class="log">
+
+                    </ul>
+                </div>
+            </div>
+            <h3>
+                Last 10 Indexed:
+            </h3>
+            <div class="col-md-6">
+                <div class="lastTen well well-lg">
+                    <ul></ul>
+                </div>
+            </div>
+       </div>
+        <div class="row">
+            <h3>
+                Last 10 Errors:
+            </h3>
+            <div class="col-md-6">
+                <div class="well well-lg">
+                    <ul class="errors"></ul>
+                </div>
+                <p>Total Errors: <span class="error_count"></span></p>
+            </div>
+            <h3>
+                Crawl Custom URL:
+            </h3>
+            <div class="col-md-6">
+                <p>Please insert the path to the robots.txt file for the domain you want to crawl.</p>
+                <input type="text" class="crawl_request" /> 
+                <p>Please Input what the crawler should be bound to. For example, only allow URL's on the domain "cnn.com/"</p>
+                <input type="text" class="crawl_bound" />
+                <button class="custom_crawl">Search!</button>
+            </div>
         </div>
     </div> <!-- /container -->
 </body>
