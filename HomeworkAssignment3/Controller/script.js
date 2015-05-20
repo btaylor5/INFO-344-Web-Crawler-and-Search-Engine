@@ -19,8 +19,12 @@
     }, 10000);
 
     window.setInterval(function () {
-        IndexCount();
+        GetErrorList();
+    }, 5000);
+
+    window.setInterval(function () {
         ErrorCount();
+        IndexCount();
         var errors = parseInt($(".error_count").html());
         var indexed =  parseInt($(".index_count").html());
         var total = errors + indexed
@@ -33,15 +37,11 @@
 
     window.setInterval(function () {
         SystemStatus();
-    }, 3000);
-
-    window.setInterval(function () {
-        GetErrorList();
-    }, 5000);
+    }, 10000);
 
     window.setInterval(function () {
         LeftToProcess();
-    }, 2000);
+    }, 5000);
 
     window.setInterval(function () {
         GetMemory();

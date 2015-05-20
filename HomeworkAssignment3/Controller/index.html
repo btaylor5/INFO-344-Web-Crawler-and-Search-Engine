@@ -89,82 +89,89 @@
             </div>
         </div>
         <div class="row">
-            <div class="controls col-md-6">
+            <div class="controls col-md-12 text-centered">
                 <h3>
                     Controls
                 </h3>
                 <button class="load btn btn-success"><span>Load</span></button>
                 <button class="start btn btn-primary"><span>Start</span></button>
                 <button class="stop btn btn-warning"><span>Stop</span></button>
-                <button class="clear-index btn btn-danger"><span>Clear Index</span></button>
+                <button class="clear-index btn btn-danger"><span>Clear Index and History</span></button>
                 <button class="clear-queue btn btn-danger"><span>Clear Crawl Queue</span></button>
-            </div>
-            <div class="col-md-6">
-                <h3>
-                    Add To Crawl Queue
-                </h3>
-                <input type="text" class="add_url" /> <button class="add_button">Add</button>
             </div>
         </div>
         <div class="row">
-            <div class="col-md-12">
-                <h3>
-                    Search Index By URL:
-                </h3>
-                <input type="text" class="search_query" /> <button class="search_for_index">Search!</button>
-            </div>
             <div class="col-md-12">
                 <h3>
                     Search Results:
                 </h3>
-                <div class="search_results well well-lg">
-                    <ul></ul>
+                <div class="well well-lg">
+                    <h3>
+                        Search Index By URL:
+                    </h3>
+                    <input type="text" class="search_query" /> <button class="search_for_index">Search!</button>
+                    <p class="search_results"></p>
                 </div>
             </div>
 
         </div>
 
         <div class="row">
-            <h3>
-                System Status Log:
-            </h3>
-            <div class="col-md-6">
-                <div class="well well-lg">
-                    <ul class="log">
-
-                    </ul>
+            <div>
+                <h3>
+                    System Status Log:
+                </h3>
+                <div class="col-md-12">
+                    <div class="well well-lg">
+                        <ul class="log"></ul>
+                    </div>
                 </div>
             </div>
-            <h3>
-                Last 10 Indexed:
-            </h3>
-            <div class="col-md-6">
-                <div class="lastTen well well-lg">
-                    <ul></ul>
+        </div>
+        <div class="row">
+                <div>
+                    <h3>
+                        Last 10 Indexed:
+                    </h3>
+                    <div class="col-md-12">
+                        <div class="lastTen well well-lg">
+                            <ul></ul>
+                        </div>
+                    </div>
                 </div>
             </div>
-       </div>
         <div class="row">
             <h3>
                 Last 10 Errors:
             </h3>
-            <div class="col-md-6">
+            <div class="col-md-12">
                 <div class="well well-lg">
                     <ul class="errors"></ul>
                 </div>
                 <p>Total Errors: <span class="error_count"></span></p>
             </div>
-            <h3>
-                Crawl Custom URL:
-            </h3>
-            <div class="col-md-6">
-                <p>Please insert the path to the robots.txt file for the domain you want to crawl.</p>
-                <input type="text" class="crawl_request" /> 
-                <p>Please Input what the crawler should be bound to. For example, only allow URL's on the domain "cnn.com/"</p>
-                <input type="text" class="crawl_bound" />
-                <button class="custom_crawl">Search!</button>
-            </div>
         </div>
+            <div class="row">
+                <h3>
+                    Crawl Custom URL:
+                </h3>
+                <div class="col-md-6">
+                    <p>Running this might break things</p>
+                    <br />
+
+                    <p>Please insert the path to the robots.txt file for the domain you want to crawl. For Example: http://www.cnn.com/robots.txt </p>
+                    <input type="text" class="crawl_request" />
+                    <p>Please Input what the crawler should be bound to. For example, only allow URL's on the domain "cnn.com/"</p>
+                    <input type="text" class="crawl_bound" />
+                    <button class="custom_crawl">Load Custom Crawl!</button>
+                </div>
+                <div class="col-md-6">
+                    <h3>
+                        Add To Crawl Queue
+                    </h3>
+                    <input type="text" class="add_url" /> <button class="add_button">Add</button>
+                </div>
+            </div>
     </div> <!-- /container -->
 </body>
 </html>

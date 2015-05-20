@@ -423,8 +423,17 @@ namespace CrawlingLibrary
                 .Where(
                     TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.GreaterThan, "")
                     );
-            var total = errors.ExecuteQuery(allEntries).ToList().Count;
-            return total;
+            try
+            {
+                var total = errors.ExecuteQuery(allEntries).ToList().Count;
+                return total;
+
+            }
+            catch(StorageException se)
+            {
+                InitializeCommunication();
+                return 0;
+            }
         }
 
 
