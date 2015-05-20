@@ -309,6 +309,11 @@ namespace CrawlingLibrary
                 TableCommunication.InsertError(ex.Status.ToString(), ex.Message, url);
                 return null;
             }
+            catch (Exception e)
+            {
+                TableCommunication.InsertError(e.Message, "Something unexpected occured. Surviving", url);
+                return null;
+            }
         }
 
         /// <summary>
