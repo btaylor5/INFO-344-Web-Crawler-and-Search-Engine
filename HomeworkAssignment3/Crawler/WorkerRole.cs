@@ -77,7 +77,7 @@ namespace Crawler
         {
 
             int performanceLoop = 20;
-            string lastCommand = "STOP";
+            string lastCommand = "CRAWL";
             TableCommunication.InsertSystemStatus("IDLE", "Just Booted Up System");
             // TODO: Replace the following with your own logic.
             while (!cancellationToken.IsCancellationRequested)
@@ -136,11 +136,20 @@ namespace Crawler
 
                     if (!disallowed && !isIndexed)
                     {
-                        CrawledURL info = crawler.CrawlURL(url);
-                        if (info != null)
+                        try
                         {
-                            TableCommunication.IndexUrl(info);
+                            CrawledURL info = crawler.CrawlURL(url);
+                            if (info != null)
+                            {
+                                TableCommunication.IndexUrl(info);
+                            }
                         }
+                        catch (Exception e)
+                        {
+                            TableCommunication.InsertSystemStatus("Recovering From Error", e.GetBaseException().Message);
+                            lastCommand = "CRAWL";
+                        }
+
                     }
                     if (disallowed)
                     {
