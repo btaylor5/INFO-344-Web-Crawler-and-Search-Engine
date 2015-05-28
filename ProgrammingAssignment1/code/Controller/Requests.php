@@ -24,6 +24,8 @@ if(isset($_REQUEST['name']) && isset($_REQUEST['callback']))
     $result = $player->exact_match($player, $DB_Connection);
     if ($result != null) {
         $response = $result;
+        $response->ImageURL = Player::staticFindImageURL($response['PlayerName']);
+
     } else {
         $response =  "";
     }

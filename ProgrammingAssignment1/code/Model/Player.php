@@ -62,10 +62,16 @@ class Player {
     // Sets the players image url
     public function findImageURL()
     {
-        $baseURL = 'http://www.nba.com/media/playerfile/';
-        $fileName = str_replace(' ', '_', strtolower($this->name));
-        $url = $baseURL . $fileName . '.jpg';
+        $url = staticFindImageURL($this->name);
         $this->setPhoto($url);
+
+    }
+
+    public static function staticFindImageURL($name) {
+        $baseURL = 'http://www.nba.com/media/playerfile/';
+        $fileName = str_replace(' ', '_', strtolower($name));
+        $url = $baseURL . $fileName . '.jpg';
+        return $url;
     }
 
     // returns the Player as an array
