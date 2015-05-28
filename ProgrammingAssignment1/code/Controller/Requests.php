@@ -8,7 +8,7 @@
  * Listens for requests and returns JSON representation of the query results.
  *
  */
-header("Content-Type: application/json", true);
+header("Content-Type: text/javascript", true);
 include_once('../Model/PlayerStack.php');
 include_once('../Model/DBAccess.php');
 include_once('../Model/Search.php');
@@ -16,24 +16,32 @@ include_once('../Model/Player.php');
 
 // Listens for a Request with the paramater 'name'
 $DB_Connection = new DBAccess();
-if(isset($_REQUEST['name']))
+if(isset($_REQUEST['name']) && isset($_REQUEST['callback']))
 {
     $player = new Search($_REQUEST['name']);
-    $playerStack = $player->searchLevenshtein($DB_Connection);
-    $players = $playerStack->asArray();
-    $results = array();
-    if (sizeof($players) > 0)
-    {
-        foreach($players as $player)
-        {
-            $results[] = $player->arrayRepresentation();
-        }
-        echo json_encode(array_reverse($results));
-    } else
-    {
-        echo "No Results, Try Refining your search!";
+    //$playerStack = $player->searchLevenshtein($DB_Connection);
+    //$players = $playerStack->asArray();
+    $result = $player->exact_match($player, $DB_Connection);
+    if (sizeof($result) > 0) {
+        $top = array_pop($result);
+        $response = $top;
+    } else {
+        $response =  "";
     }
-} else
-{
-    echo "{ERROR}";
+    $response = json_encode($response);
+    echo $_GET['callback'] . '(' . $response . ');';
+
+// OLD CODE FOR SPELL CHECK
+//    $results = array();
+//    if (sizeof($players) > 0)
+//    {
+//        foreach($players as $player)
+//        {
+//            $results[] = $player->arrayRepresentation();
+//        }
+//        echo json_encode(array_reverse($results));
+//    } else
+//    {
+//        echo "No Results, Try Refining your search!";
+//    }
 }

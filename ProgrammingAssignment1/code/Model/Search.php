@@ -42,6 +42,27 @@ class Search {
         return FALSE;
     }
 
+
+
+    function exact_match($name, $DB_Connection) {
+        $result = "";
+        $name = str_replace(array('.', '-', ',', '!', '?', ), '', $name);
+        if (strlen($name) > 0) {
+            $sql = "
+                SELECT *
+                FROM nbaStats
+                WHERE replace(replace(replace(PlayerName, '.', ''), '-', ''), ',', '')
+                = ?
+                ";
+            $stmt = $DB_Connection->getConnection()->prepare($sql);
+            $stmt->execute(array($name));
+            $result = $stmt->fetchAll();
+
+        }
+        return $result;
+    }
+
+
     /**
      * $closest_matches = an array that holds possible results already,
      * will be included in the returned array
@@ -57,7 +78,6 @@ class Search {
      * @param $DB_Connection
      * @return array
      */
-
     function lookUpPlayer($closest_matches, $DB_Connection)
     {
         $results = array();
