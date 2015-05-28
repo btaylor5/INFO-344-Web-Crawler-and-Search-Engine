@@ -8,6 +8,7 @@
  * Search includes the necessary methods to search for players
  */
 include_once('PlayerStack.php');
+include_once('Player.php');
 class Search {
 
     private $name_array;
@@ -56,7 +57,11 @@ class Search {
             $stmt = $DB_Connection->getConnection()->prepare($sql);
             $stmt->execute(array($name));
             $result = $stmt->fetchAll();
-            return $result[0];
+            if (!empty($result)) {
+                $top = $result[0];
+                $top['ImageURL'] = Player::staticFindImageURL($top['PlayerName']);
+                return $top;
+            }
         }
         return array();
     }

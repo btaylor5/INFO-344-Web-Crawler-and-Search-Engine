@@ -64,7 +64,6 @@ class Player {
     {
         $url = staticFindImageURL($this->name);
         $this->setPhoto($url);
-
     }
 
     public static function staticFindImageURL($name) {

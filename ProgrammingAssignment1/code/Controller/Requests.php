@@ -25,7 +25,6 @@ if(isset($_REQUEST['name']) && isset($_REQUEST['callback']))
     if ($result != null) {
         $response = $result;
         $response->ImageURL = Player::staticFindImageURL($response['PlayerName']);
-
     } else {
         $response =  "";
     }
