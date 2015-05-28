@@ -22,14 +22,12 @@ if(isset($_REQUEST['name']) && isset($_REQUEST['callback']))
     //$playerStack = $player->searchLevenshtein($DB_Connection);
     //$players = $playerStack->asArray();
     $result = $player->exact_match($player, $DB_Connection);
-    if (sizeof($result) > 0) {
-        $top = array_pop($result);
-        $response = $top;
+    if ($result != null) {
+        $response = $result;
     } else {
         $response =  "";
     }
-    $response = json_encode($response);
-    echo $_GET['callback'] . '(' . $response . ');';
+    echo $_GET['callback'] . '(' . json_encode($response) . ');';
 
 // OLD CODE FOR SPELL CHECK
 //    $results = array();
