@@ -45,7 +45,6 @@ class Search {
 
 
     function exact_match($name, $DB_Connection) {
-        $result = "";
         $name = str_replace(array('.', '-', ',', '!', '?', ), '', $name);
         if (strlen($name) > 0) {
             $sql = "
@@ -57,9 +56,9 @@ class Search {
             $stmt = $DB_Connection->getConnection()->prepare($sql);
             $stmt->execute(array($name));
             $result = $stmt->fetchAll();
-
+            return $result[0];
         }
-        return $result;
+        return array();
     }
 
 
