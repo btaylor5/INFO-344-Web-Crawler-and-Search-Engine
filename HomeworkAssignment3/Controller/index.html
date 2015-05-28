@@ -1,177 +1,37 @@
-﻿<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+﻿<html>
 <head>
-    <title></title>
+    <title>NBA Player Search</title>
 
-    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+    <script src="http://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <!-- jQuery necessary for bootstrap-->
+    <script src="http://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    <!-- Latest compiled and minified JavaScript -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
-
-    <script src="script.js"></script>
+    <!-- MyJS-->
+    <script src="/index_script.js"></script>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <!-- Bootstrap theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css">
+    <!--Stylesheet-->
+    <link rel="stylesheet" href="/style.css">
 
 </head>
-<body>
-    <div class="container">
-
-        <div class="page-header">
-            <h1>Web Crawler Control Panel</h1>
-            <p class ="status">Loading...</p>
-        </div>
-
-    <h2>Counts</h2>
-        <div class="row">
-            <div class="col-md-6">
-                <h3>
-                    Crawling Counts
-                </h3>
-                <table class="table table-bordered">
-                    <thead>
-                        <tr>
-                            <th>
-                                Indexed
-                            </th>
-                            <th>
-                                Crawled
-                            </th>
-                            <th>
-                                Success Rate
-                            </th>
-                            <th>
-                                Crawl Queue
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="index_count">
-                                Loading...
-                            </td>
-                            <td class="crawl_count">
-                                Loading...
-                            </td>
-                            <td class="success_rate">
-                                Loading...
-                            </td>
-                            <td class="queue_count">
-                                Loading...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="col-md-6">
-                <h3>
-                    Machine Counters:
-                </h3>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>
-                                    CPU
-                                </th>
-                                <th>
-                                    Memory
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td class="cpu_stat">
-                                    Loading...
-                                </td>
-                                <td class="memory_stat">
-                                    Loading...
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-            </div>
-        </div>
-        <div class="row">
-            <div class="controls col-md-12 text-centered">
-                <h3>
-                    Controls
-                </h3>
-                <button class="load btn btn-success"><span>Load</span></button>
-                <button class="start btn btn-primary"><span>Start</span></button>
-                <button class="stop btn btn-warning"><span>Stop</span></button>
-                <button class="clear-index btn btn-danger"><span>Clear Index and History</span></button>
-                <button class="clear-queue btn btn-danger"><span>Clear Crawl Queue</span></button>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12">
-                <h3>
-                    Search Results:
-                </h3>
-                <div class="well well-lg">
-                    <h3>
-                        Search Index By URL:
-                    </h3>
-                    <input type="text" class="search_query" /> <button class="search_for_index">Search!</button>
-                    <p class="search_results"></p>
+<body class="container">
+    <div class="jumbotron search-box">
+        <div class="container search-container">
+            <div class="form-inline">
+                <div class="form-group">
+                    <input type="text" class="form-control" id="search-box" placeholder="Player Name...">
                 </div>
+                <button id="search" class="btn btn-primary search-button">Search!</button>
             </div>
+        </div>
+    </div>
+    <div id="results" class="">
+        <div class="nba-result">
 
         </div>
-
-        <div class="row">
-            <div>
-                <h3>
-                    System Status Log:
-                </h3>
-                <div class="col-md-12">
-                    <div class="well well-lg">
-                        <ul class="log"></ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="row">
-                <div>
-                    <h3>
-                        Last 10 Indexed:
-                    </h3>
-                    <div class="col-md-12">
-                        <div class="lastTen well well-lg">
-                            <ul></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <div class="row">
-            <h3>
-                Last 10 Errors:
-            </h3>
-            <div class="col-md-12">
-                <div class="well well-lg">
-                    <ul class="errors"></ul>
-                </div>
-                <p>Total Errors: <span class="error_count"></span></p>
-            </div>
-        </div>
-            <div class="row">
-                <h3>
-                    Crawl Custom URL:
-                </h3>
-                <div class="col-md-6">
-                    <p>Running this might break things</p>
-                    <br />
-
-                    <p>Please insert the path to the robots.txt file for the domain you want to crawl. For Example: http://www.cnn.com/robots.txt </p>
-                    <input type="text" class="crawl_request" />
-                    <p>Please Input what the crawler should be bound to. For example, only allow URL's on the domain "cnn.com/"</p>
-                    <input type="text" class="crawl_bound" />
-                    <button class="custom_crawl">Load Custom Crawl!</button>
-                </div>
-                <div class="col-md-6">
-                    <h3>
-                        Add To Crawl Queue
-                    </h3>
-                    <input type="text" class="add_url" /> <button class="add_button">Add</button>
-                </div>
-            </div>
-    </div> <!-- /container -->
+    </div>
 </body>
 </html>

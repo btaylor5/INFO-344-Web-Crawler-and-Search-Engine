@@ -88,7 +88,11 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="dashboard.html" />
+    <Content Include="generic-avatar-390x390.png" />
     <Content Include="index.html" />
+    <Content Include="index_script.js" />
+    <Content Include="loading-blue.gif" />
     <Content Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -100,6 +104,7 @@
   <ItemGroup>
     <Content Include="admin.asmx" />
     <Content Include="script.js" />
+    <Content Include="style.css" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
