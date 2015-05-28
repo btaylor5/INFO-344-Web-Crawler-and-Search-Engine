@@ -17,7 +17,7 @@ function NBAPlayer() {
         });
 }
 
-window.callback = function(data) {
+window.callback = function (data) {
     console.log(data);
     printResults(data);
 };
@@ -31,8 +31,10 @@ function hideLoad() {
 }
 
 function printResults(data) {
-    console.log(data);
-    //hideLoad();
+
+    baseHTML = "";
+    if (data != "" ) {
+        console.log("Returned NBA Result");
         var baseHTML = "" +
         "<div class='player'>" +
         "   <div>" +
@@ -69,11 +71,17 @@ function printResults(data) {
         "   </div>" +
         "</div>";
 
-        $('#results').append(baseHTML);
-
         $('.profile-pic').one('error', function () {
             this.src = 'generic-avatar-390x390.png';
         });
+
+
+    }
+
+    $('.nba-result').empty().append(baseHTML);
+
+    //hideLoad();
+        
 }
 
 });
