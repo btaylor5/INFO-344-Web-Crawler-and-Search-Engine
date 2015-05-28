@@ -1,0 +1,6 @@
+C:\Users\Bryant Taylor\Source\Repos\INFO344\TestApp\TestApp\bin\Debug\TestApp.exe.config
+C:\Users\Bryant Taylor\Source\Repos\INFO344\TestApp\TestApp\bin\Debug\TestApp.exe
+C:\Users\Bryant Taylor\Source\Repos\INFO344\TestApp\TestApp\bin\Debug\TestApp.pdb
+C:\Users\Bryant Taylor\Source\Repos\INFO344\TestApp\TestApp\obj\Debug\TestApp.exe
+C:\Users\Bryant Taylor\Source\Repos\INFO344\TestApp\TestApp\obj\Debug\TestApp.pdb
+C:\Users\Bryant Taylor\Source\Repos\INFO344\TestApp\TestApp\obj\Debug\TestApp.csprojResolveAssemblyReference.cache
