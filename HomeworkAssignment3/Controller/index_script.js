@@ -7,7 +7,7 @@
 function NBAPlayer() {
         $.ajax({
             url: 'http://ec2-54-69-7-140.us-west-2.compute.amazonaws.com/code/Controller/Requests.php',
-            data: { name: $('#search-box').val },
+            data: { name: $('#search-box').val() },
             dataType: 'jsonp',
             jsonp: 'callback',
             jsonpCallback: 'callback',
@@ -17,9 +17,10 @@ function NBAPlayer() {
         });
 }
 
-function callback(data) {
+window.callback = function(data) {
+    console.log(data);
     printResults(data);
-}
+};
 
 function showLoading() {
     $('#results').html('<img class="loading" src="/loading-blue.gif" />');
@@ -30,15 +31,15 @@ function hideLoad() {
 }
 
 function printResults(data) {
-    hideLoad();
-    for (var i = 0; i < data.length; i++) {
+    console.log(data);
+    //hideLoad();
         var baseHTML = "" +
         "<div class='player'>" +
         "   <div>" +
         "      <img class='profile-pic' " +
-        " src='" + data[i].ImageURL + "' onError='this'>" +
+        " src='" + data.ImageURL + "' onError='this'>" +
         "       <h2 class='PlayerName'>" +
-                    data[i].PlayerName +
+                    data.PlayerName +
         "       </h2>" +
         "       <table class='table table-bordered stat-table'>" +
         "       <thead class='bg-primary'>" +
@@ -52,15 +53,15 @@ function printResults(data) {
         "        </thead>" +
         "        <tbody>" +
         "       <tr>" +
-        "           <td class='stat'>" + data[i].GP +
+        "           <td class='stat'>" + data.GP +
         "           </td>" +
-        "           <td class='stat'>" + data[i].FGP +
+        "           <td class='stat'>" + data.FGP +
         "           </td>" +
-        "           <td class='stat'>" + data[i].TPP +
+        "           <td class='stat'>" + data.TPP +
         "           </td>" +
-        "           <td class='stat'>" + data[i].FTP +
+        "           <td class='stat'>" + data.FTP +
         "           </td>" +
-        "           <td class='stat'>" + data[i].PPG +
+        "           <td class='stat'>" + data.PPG +
         "           </td>" +
         "       </tr>" +
         "      </tbody>" +
@@ -71,9 +72,8 @@ function printResults(data) {
         $('#results').append(baseHTML);
 
         $('.profile-pic').one('error', function () {
-            this.src = 'src/generic-avatar-390x390.png';
+            this.src = 'generic-avatar-390x390.png';
         });
-    }
 }
 
 });
