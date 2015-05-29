@@ -19,21 +19,25 @@
     }, 10000);
 
     window.setInterval(function () {
+        GetCrawlCounters();
+    }, 10000);
+
+    window.setInterval(function () {
         GetErrorList();
     }, 5000);
 
-    window.setInterval(function () {
-        ErrorCount();
-        IndexCount();
-        var errors = parseInt($(".error_count").html());
-        var indexed =  parseInt($(".index_count").html());
-        var total = errors + indexed
-        $(".crawl_count").empty().append(total);
+    //window.setInterval(function () {
+    //    ErrorCount();
+    //    IndexCount();
+    //    var errors = parseInt($(".error_count").html());
+    //    var indexed =  parseInt($(".index_count").html());
+    //    var total = errors + indexed
+    //    $(".crawl_count").empty().append(total);
 
-        var percentage = Math.floor(parseInt(indexed / total * 100));
-        console.log(total);
-        $(".success_rate").empty().append(percentage + "%");
-    }, 10000);
+    //    var percentage = Math.floor(parseInt(indexed / total * 100));
+    //    console.log(total);
+    //    $(".success_rate").empty().append(percentage + "%");
+    //}, 10000);
 
     window.setInterval(function () {
         SystemStatus();
@@ -124,39 +128,39 @@
         });
     };
 
-    function IndexCount() {
-        $.ajax({
-            type: "POST",
-            url: "/admin.asmx/IndexCount",
-            data: "{}",
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (msg) {
-                var total = getData(msg)
-                $(".index_count").empty().append(total);
-            },
-            error: function (msg) {
-                console.log(msg['response']);
-            }
-        });
-    };
+    //function IndexCount() {
+    //    $.ajax({
+    //        type: "POST",
+    //        url: "/admin.asmx/IndexCount",
+    //        data: "{}",
+    //        contentType: "application/json; charset=utf-8",
+    //        dataType: "json",
+    //        success: function (msg) {
+    //            var total = getData(msg)
+    //            $(".index_count").empty().append(total);
+    //        },
+    //        error: function (msg) {
+    //            console.log(msg['response']);
+    //        }
+    //    });
+    //};
 
-    function ErrorCount() {
-        $.ajax({
-            type: "POST",
-            url: "/admin.asmx/ErrorCount",
-            data: "{}",
-            contentType: "application/json; charset=utf-8",
-            dataType: "json",
-            success: function (msg) {
-                var total = getData(msg)
-                $(".error_count").empty().append(total);
-            },
-            error: function (msg) {
-                console.log(msg['response']);
-            }
-        });
-    }
+    //function ErrorCount() {
+    //    $.ajax({
+    //        type: "POST",
+    //        url: "/admin.asmx/ErrorCount",
+    //        data: "{}",
+    //        contentType: "application/json; charset=utf-8",
+    //        dataType: "json",
+    //        success: function (msg) {
+    //            var total = getData(msg)
+    //            $(".error_count").empty().append(total);
+    //        },
+    //        error: function (msg) {
+    //            console.log(msg['response']);
+    //        }
+    //    });
+    //}
 
     function SystemStatus() {
         $.ajax({
@@ -167,6 +171,29 @@
             dataType: "json",
             success: function (msg) {
                 ToCommandLog(msg);
+            },
+            error: function (msg) {
+                console.log(msg['response']);
+            }
+        });
+    };
+
+    function GetCrawlCounters() {
+        $.ajax({
+            type: "POST",
+            url: "/admin.asmx/GetCrawlCounters",
+            data: "{}",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                var data = getData(msg);
+                var indexed = data[0];
+                var crawled = data[2];
+                $(".index_count").empty().append(indexed);
+                $(".error_count").empty().append(data[1]);
+                $(".crawl_count").empty().append(crawled);
+                var percentage = Math.floor(parseInt(indexed / crawled * 100));
+                $(".success_rate").empty().append(percentage + "%");
             },
             error: function (msg) {
                 console.log(msg['response']);

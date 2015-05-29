@@ -185,7 +185,7 @@ namespace Controller
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string IndexCount()
         {
-           return new JavaScriptSerializer().Serialize(TableCommunication.IndexCountQuery());
+           return new JavaScriptSerializer().Serialize(TableCommunication.GetTotalIndexed());
         }
 
         /// <summary>
@@ -196,7 +196,22 @@ namespace Controller
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string ErrorCount()
         {
-            return new JavaScriptSerializer().Serialize(TableCommunication.ErrorCountQuery());
+            return new JavaScriptSerializer().Serialize(TableCommunication.GetErrorCount());
+        }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string CrawlCount()
+        {
+            return new JavaScriptSerializer().Serialize(TableCommunication.GetTotalCrawled());
+        }
+
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string GetCrawlCounters()
+        {
+            return new JavaScriptSerializer().Serialize(TableCommunication.ArrayOfCounters());
         }
 
         /// <summary>

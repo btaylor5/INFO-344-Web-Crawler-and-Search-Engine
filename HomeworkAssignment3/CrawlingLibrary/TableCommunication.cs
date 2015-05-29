@@ -24,6 +24,7 @@ namespace CrawlingLibrary
         private static CloudTable performace = tableClient.GetTableReference("performance");
         private static CloudTable errors = tableClient.GetTableReference("errors");
         private static CloudTable system = tableClient.GetTableReference("system");
+        private static CloudTable totals = tableClient.GetTableReference("counters");
 
         /// <summary>
         /// This Should be run before making any table requests to ensure that the necessary tables are built for using the CrawlerClass
@@ -35,7 +36,8 @@ namespace CrawlingLibrary
             disallow.CreateIfNotExists();
             performace.CreateIfNotExists();
             errors.CreateIfNotExists();
-            system.CreateIfNotExists();;
+            system.CreateIfNotExists();
+            totals.CreateIfNotExists();
         }
 
         /// <summary>
@@ -171,6 +173,7 @@ namespace CrawlingLibrary
             {
                 Debug.WriteLine("[Indexed] " + url.Title + " -> " + url.URL + "\n");
                 indexed.Execute(insertOperation);
+                TableCommunication.IncrementIndexed();
             }
             catch (StorageException se)
             {
@@ -315,6 +318,7 @@ namespace CrawlingLibrary
             ErrorEntity entity = new ErrorEntity(SanitizeForTable(status), SanitizeForTable(message), SanitizeForTable(url));
             TableOperation operation = TableOperation.Insert(entity);
             errors.Execute(operation);
+            TableCommunication.IncrementErrors();
         }
 
         /// <summary>
@@ -472,7 +476,69 @@ namespace CrawlingLibrary
             while (!CreatedTableAfterDelete(touched)) { }
         }
 
+        public static void IncrementIndexed()
+        {
+            IncrementCounter(1, 0);
+        }
 
+        public static void IncrementErrors()
+        {
+            IncrementCounter(0, 1);
+        }
+
+        private static void IncrementCounter(int addToIndexed, int addToErrors)
+        {
+            TotalEntity counter = lastCounters();
+            counter.totalIndexed = counter.totalIndexed + addToIndexed;
+            counter.totalErrors = counter.totalErrors + addToErrors;
+            counter.totalCrawled = counter.totalCrawled + addToIndexed + addToErrors;
+
+            TableOperation op = TableOperation.InsertOrReplace(counter);
+            totals.Execute(op);
+        }
+
+        public static int GetErrorCount()
+        {
+            return lastCounters().totalErrors;
+        }
+
+        public static int GetTotalIndexed()
+        {
+            return lastCounters().totalIndexed;
+
+        }
+
+        public static int GetTotalCrawled()
+        {
+            return lastCounters().totalCrawled;
+
+        }
+
+        public static TotalEntity lastCounters()
+        {
+            TableQuery<TotalEntity> lastCounters = new TableQuery<TotalEntity>()
+                .Where(
+                TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "Total")
+            ).Take(1);
+
+            var lastStatus = totals.ExecuteQuery(lastCounters).ToList();
+            TotalEntity counter;
+            if (lastStatus.Count > 0)
+            {
+                counter = lastStatus[0];
+            }
+            else
+            {
+                counter = new TotalEntity(0, 0);
+            }
+            return counter;
+        }
+
+        public static int[] ArrayOfCounters()
+        {
+            TotalEntity counter = lastCounters();
+            return new int[3] { counter.totalIndexed, counter.totalErrors, counter.totalIndexed };
+        }
 
     }
 }
