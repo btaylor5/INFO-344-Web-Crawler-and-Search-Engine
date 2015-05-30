@@ -297,7 +297,7 @@ namespace CrawlingLibrary
                         body = doc.DocumentNode.SelectSingleNode("/html/body").InnerText;
                     }
                     string compressedBody = Regex.Replace(body, @"\s+", " ").Trim();
-                    return new CrawledURL(TableCommunication.SanitizeForTable(title), url, time, compressedBody);
+                    return new CrawledURL(TableCommunication.SanitizeForTable(title), url, TableCommunication.SanitizeForTable(title), time, compressedBody);
                 }
                 else
                 {

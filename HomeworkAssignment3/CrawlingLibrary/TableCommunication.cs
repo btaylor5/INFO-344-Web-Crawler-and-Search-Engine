@@ -24,7 +24,7 @@ namespace CrawlingLibrary
         private static CloudTable performace = tableClient.GetTableReference("performance");
         private static CloudTable errors = tableClient.GetTableReference("errors");
         private static CloudTable system = tableClient.GetTableReference("system");
-        private static CloudTable totals = tableClient.GetTableReference("counters");
+        private static CloudTable crawltotals = tableClient.GetTableReference("crawltotals");
 
         /// <summary>
         /// This Should be run before making any table requests to ensure that the necessary tables are built for using the CrawlerClass
@@ -37,7 +37,7 @@ namespace CrawlingLibrary
             performace.CreateIfNotExists();
             errors.CreateIfNotExists();
             system.CreateIfNotExists();
-            totals.CreateIfNotExists();
+            crawltotals.CreateIfNotExists();
         }
 
         /// <summary>
@@ -154,33 +154,42 @@ namespace CrawlingLibrary
         /// Stores the URL and its information into the table for access later
         /// </summary>
         /// <param name="url"></param>
-        public static void IndexUrl(CrawledURL url)
+        public static void IndexUrl(CrawledURL urlEntity)
         {
 
-            
-            url.PartitionKey = SanitizeForTable(url.PartitionKey);
-            while (64000 <= url.Body.Length * sizeof(Char))
+            urlEntity.PartitionKey = SanitizeForTable(urlEntity.PartitionKey);
+            while (64000 <= urlEntity.Body.Length * sizeof(Char))
             {
-                int overflow = (url.Body.Length * sizeof(Char));
+                int overflow = (urlEntity.Body.Length * sizeof(Char));
                 if (64000 - overflow < 0) {
                     overflow = overflow - 64000;
                 }
-                url.Body = url.Body.Substring(0, overflow);
+                urlEntity.Body = urlEntity.Body.Substring(0, overflow);
             }
 
-            TableOperation insertOperation = TableOperation.Insert(url);
-            try
+            string[] DoNotIndex = new string[] {"is", "at", "which", "on", "the", "a", "in" };
+            char[] Remove = new char[] {' ', '\'', '`', '\"', ',', ':', '-', '?', '!', '_', '.', '~', '/', '\\', '^', '(', ')', '#'};
+           
+            var listOfWords = urlEntity.Title.Split(Remove, StringSplitOptions.RemoveEmptyEntries).Where(x => !DoNotIndex.Contains(x.ToLowerInvariant()));
+            foreach (string word in listOfWords)
             {
-                Debug.WriteLine("[Indexed] " + url.Title + " -> " + url.URL + "\n");
-                indexed.Execute(insertOperation);
-                TableCommunication.IncrementIndexed();
+                Debug.WriteLine("In the Foreach: " + word);
+                CrawledURL reverseIndex = new CrawledURL(word, urlEntity.URL, urlEntity.Title, urlEntity.Date, urlEntity.Body);
+                TableOperation insertOperation = TableOperation.Insert(reverseIndex);
+                try
+                {
+                    Debug.WriteLine("[Indexed] " + urlEntity.Title + " -> " + urlEntity.URL + "\n");
+                    indexed.Execute(insertOperation);
+                }
+                catch (StorageException se)
+                {
+                    Debug.WriteLine("Error!!!!: " + se.Message + "   " + se.Data + "\n");
+                    InsertError(SanitizeForTable(se.Message), SanitizeForTable(se.Data.ToString()), urlEntity.URL);
+                    Debug.WriteLine("Caught Table Insert Error: " + urlEntity.PartitionKey + " " + urlEntity.RowKey + " " + urlEntity.Date + " " + urlEntity.URL + " " + urlEntity.Body);
+                }
             }
-            catch (StorageException se)
-            {
-                Debug.WriteLine("Error!!!!: " + se.Message + "   " + se.Data + "\n");
-                InsertError(SanitizeForTable(se.Message), SanitizeForTable(se.Data.ToString()), url.URL);
-                Debug.WriteLine("Caught Table Insert Error: " + url.PartitionKey + " " + url.RowKey + " " + url.Date + " " + url.URL + " " + url.Body);
-            }
+            TableCommunication.IncrementIndexed();
+
         }
 
         /// <summary>
@@ -494,7 +503,7 @@ namespace CrawlingLibrary
             counter.totalCrawled = counter.totalCrawled + addToIndexed + addToErrors;
 
             TableOperation op = TableOperation.InsertOrReplace(counter);
-            totals.Execute(op);
+            crawltotals.Execute(op);
         }
 
         public static int GetErrorCount()
@@ -521,7 +530,7 @@ namespace CrawlingLibrary
                 TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, "Total")
             ).Take(1);
 
-            var lastStatus = totals.ExecuteQuery(lastCounters).ToList();
+            var lastStatus = crawltotals.ExecuteQuery(lastCounters).ToList();
             TotalEntity counter;
             if (lastStatus.Count > 0)
             {
@@ -537,7 +546,7 @@ namespace CrawlingLibrary
         public static int[] ArrayOfCounters()
         {
             TotalEntity counter = lastCounters();
-            return new int[3] { counter.totalIndexed, counter.totalErrors, counter.totalIndexed };
+            return new int[3] { counter.totalIndexed, counter.totalErrors, counter.totalCrawled };
         }
 
     }
