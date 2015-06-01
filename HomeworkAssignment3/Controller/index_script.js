@@ -1,8 +1,15 @@
 ﻿$(function () {
     $("#search").click(function () {
         NBAPlayer();
-        //Search();
+        Search();
     });
+
+    $("#search-box").bind("keyup", function () {
+        Suggest();
+        Search();
+        NBAPlayer();
+    });
+
 
 function NBAPlayer() {
         $.ajax({
@@ -23,13 +30,13 @@ window.callback = function (data) {
 };
 
 function showLoading() {
-    $('#results').html('<img class="loading" src="/loading-blue.gif" />');
+    $('#all-results').html('<img class="loading" src="/loading-blue.gif" />');
 }
 
 function hideLoad() {
-    $('#results').empty();
+    $('#all-results').empty();
 }
-
+        
 function printResults(data) {
 
     baseHTML = "";
@@ -74,8 +81,6 @@ function printResults(data) {
         $('.profile-pic').one('error', function () {
             this.src = 'generic-avatar-390x390.png';
         });
-
-
     }
 
     $('.nba-result').empty().append(baseHTML);
@@ -83,5 +88,98 @@ function printResults(data) {
     //hideLoad();
         
 }
+
+
+function Search() {
+        $.ajax({
+            type: "POST",
+            url: "/admin.asmx/Search",
+            data:
+                '{"query":"' +  $('#search-box').val() + '","n":"' + 10 + '"}',
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                console.log("Search Success");
+                console.log(msg);
+                var data = getData(msg);
+                console.log(data);
+                $('.results-div').empty();
+                for (var i = 0; i < data.length - 1; i++) {
+                    PrintSearchResults(data[i]);
+                }
+                //jQuery.each(data, function (rec) {
+                //    console.log(rec);
+                //    PrintSearchResults(rec);
+                //});
+            },
+            error: function (msg) {
+                console.log("Left To Process Broke");
+            }
+        });
+}
+
+
+function PrintSearchResults(rec) {
+    baseHTML = "";
+    if (rec != "") {
+        baseHTML =
+            "<div class='result well'>" +
+            "<h4>" +
+            "<a href='" +
+             rec.URL +
+            "'>" +
+            rec.Title +
+            "       </a>" +
+        "</h4>" +
+        "<p>" +
+        rec.Date +
+        "</p>" +
+        "<p>" +
+            rec.Body +
+        "</p>" +
+        "</div>";
+    }
+
+    $('.results-div').append(baseHTML);
+
+}
+
+function Suggest() {
+    $.ajax({
+        type: "POST",
+        url: "/WikiSuggest.asmx/GetSuggestions",
+        data: JSONData(),
+        contentType: "application/json; charset=utf-8",
+        dataType: "json",
+        success: function (msg) {
+            $("#suggestions").empty();
+            var data = eval(msg['d']);
+            jQuery.each(data, function (rec) {
+                $("#suggestions").append("<li>" + data[rec] + "</li>");
+            });
+
+        },
+        error: function (msg) {
+            console.log(msg['response']);
+        }
+    });
+};
+
+function JSONData() {
+    var prefix = $("#search-box").val();
+    var Obj =
+        {
+            'prefix': prefix
+        };
+
+    return JSON.stringify(Obj);
+
+};
+
+function getData(msg) {
+    return eval(msg['d']);
+};
+
+
 
 });

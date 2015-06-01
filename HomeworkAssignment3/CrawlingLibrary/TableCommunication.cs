@@ -25,6 +25,10 @@ namespace CrawlingLibrary
         private static CloudTable errors = tableClient.GetTableReference("errors");
         private static CloudTable system = tableClient.GetTableReference("system");
         private static CloudTable crawltotals = tableClient.GetTableReference("crawltotals");
+        private static CloudTable lastTen = tableClient.GetTableReference("lastten");
+        private static string[] DoNotIndex = new string[] { "is", "at", "which", "and", "on", "the", "a", "in", "cnn", "com" };
+        private static char[] Remove = new char[] { ' ', '\'', '`', '\"', ',', ':', '-', '?', '!', '_', '.', '~', '/', '\\', '^', '(', ')', '#' };
+        //private static char[] Replace = new char[] { '\'', '.'}
 
         /// <summary>
         /// This Should be run before making any table requests to ensure that the necessary tables are built for using the CrawlerClass
@@ -38,6 +42,7 @@ namespace CrawlingLibrary
             errors.CreateIfNotExists();
             system.CreateIfNotExists();
             crawltotals.CreateIfNotExists();
+            lastTen.CreateIfNotExists();
         }
 
         /// <summary>
@@ -164,13 +169,20 @@ namespace CrawlingLibrary
                 if (64000 - overflow < 0) {
                     overflow = overflow - 64000;
                 }
-                urlEntity.Body = urlEntity.Body.Substring(0, overflow);
+                try
+                {
+                    urlEntity.Body = urlEntity.Body.Substring(0, overflow - 1);
+                }
+                catch
+                {
+                    urlEntity.Body = urlEntity.Body.Substring(0, 1000);
+                }
             }
 
-            string[] DoNotIndex = new string[] {"is", "at", "which", "on", "the", "a", "in" };
-            char[] Remove = new char[] {' ', '\'', '`', '\"', ',', ':', '-', '?', '!', '_', '.', '~', '/', '\\', '^', '(', ')', '#'};
+            //string[] DoNotIndex = new string[] {"is", "at", "which", "on", "the", "a", "in" };
+            //char[] Remove = new char[] {' ', '\'', '`', '\"', ',', ':', '-', '?', '!', '_', '.', '~', '/', '\\', '^', '(', ')', '#'};
            
-            var listOfWords = urlEntity.Title.Split(Remove, StringSplitOptions.RemoveEmptyEntries).Where(x => !DoNotIndex.Contains(x.ToLowerInvariant()));
+            var listOfWords = urlEntity.Title.ToLower().Split(Remove, StringSplitOptions.RemoveEmptyEntries).Where(x => !DoNotIndex.Contains(x.ToLower()));
             foreach (string word in listOfWords)
             {
                 Debug.WriteLine("In the Foreach: " + word);
@@ -189,7 +201,55 @@ namespace CrawlingLibrary
                 }
             }
             TableCommunication.IncrementIndexed();
+        }
 
+
+        public static List<CrawledURL> Search(string query, int MexResults)
+        {
+
+            List<CrawledURL> unsorted = new List<CrawledURL>();
+            var keywords = query.Split(Remove, StringSplitOptions.RemoveEmptyEntries).Where(x => !DoNotIndex.Contains(x.ToLower()));
+
+            foreach (string word in keywords) {
+                unsorted.AddRange(KeywordSearch(word));
+            }
+
+            var sorted = unsorted
+                .GroupBy(x => x.URL)
+                .OrderByDescending(x => x.Count())
+                .ThenByDescending(x => x.ElementAt(0).Date)
+                .Select(x => x.ElementAt(0))
+                .ToList();
+
+            //var injectBolding = unsorted
+            //    .GroupBy(x => x.URL)
+            //    .OrderByDescending(x => x.Count())
+            //    .ThenByDescending(x => x.ElementAt(0).Date)
+            //    .Select(x => x.ElementAt(0))
+            //    .Where(x => x.Body
+            //        .Split(new char[] {' ', ',', '.', '!', '?'})
+            //        .Where(y => keywords.Contains(y))
+            //    .ToList();
+
+
+            return sorted;
+
+
+            //return sorted;
+        }
+
+        public static List<CrawledURL> KeywordSearch(string keyword)
+        {
+
+            keyword = keyword.ToLower();
+
+            TableQuery<CrawledURL> query = new TableQuery<CrawledURL>()
+               .Where(
+                   TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, SanitizeForTable(keyword))
+                   );
+
+            var results = indexed.ExecuteQuery(query).ToList();
+            return results;
         }
 
         /// <summary>
@@ -253,7 +313,17 @@ namespace CrawlingLibrary
             indexed.DeleteIfExists();
 
             while (!CreatedTableAfterDelete(indexed)) { }
+
+            ResetCrawlCounters();
             return true;
+        }
+
+        public static bool ResetCrawlCounters()
+        {
+            crawltotals.DeleteIfExists();
+            while (!CreatedTableAfterDelete(crawltotals)) { }
+            return true;
+
         }
 
 
@@ -523,6 +593,7 @@ namespace CrawlingLibrary
 
         }
 
+
         public static TotalEntity lastCounters()
         {
             TableQuery<TotalEntity> lastCounters = new TableQuery<TotalEntity>()
@@ -547,6 +618,35 @@ namespace CrawlingLibrary
         {
             TotalEntity counter = lastCounters();
             return new int[3] { counter.totalIndexed, counter.totalErrors, counter.totalCrawled };
+        }
+
+        public static LastTen GetLastTen(string type)
+        {
+            TableQuery<LastTen> getlastten = new TableQuery<LastTen>()
+               .Where(
+               TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, type)
+                ).Take(1);
+
+            var lastinfo = lastTen.ExecuteQuery(getlastten).ToList();
+
+            LastTen last;
+            if (lastinfo.Count > 0)
+            {
+                last = lastinfo[0];
+            }
+            else
+            {
+                last = new LastTen(type, "");
+            }
+            return last;
+        }
+
+        public static void UpdateLastTen(string type, string info)
+        {
+            LastTen last = GetLastTen(type);
+            last.info = info;
+            TableOperation op = TableOperation.InsertOrReplace(last);
+            lastTen.Execute(op);
         }
 
     }

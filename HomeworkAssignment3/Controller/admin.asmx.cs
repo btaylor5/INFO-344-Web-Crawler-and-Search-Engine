@@ -27,6 +27,8 @@ namespace Controller
     public class admin : System.Web.Services.WebService
     {
 
+        public static Dictionary<string, List<CrawledURL>> cachedResults;
+
         /// <summary>
         /// The start command. Will begin to process the urls in the queue
         /// </summary>
@@ -69,10 +71,10 @@ namespace Controller
         /// <returns></returns>
         [WebMethod]
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
-        public List<string> LastTenVisitedUrls()
+        public string[] LastTenVisitedUrls()
         {
-            List<string> answer = TableCommunication.LastTenVisitedUrls();
-            return answer;
+            var info = TableCommunication.GetLastTen("LastTenURLS").info.Split(new char[] {' '});
+            return info;
         }
 
         /// <summary>
@@ -261,6 +263,33 @@ namespace Controller
             QueueCommunication.ClearQueue();
             return "Clearing Queue";
         }
+
+        [WebMethod]
+        [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
+        public string Search(string query, int n)
+        {
+            query = query.ToLower();
+            if (cachedResults == null)
+            {
+                cachedResults = new Dictionary<string, List<CrawledURL>>();
+            }
+            if (cachedResults.ContainsKey(query))
+            {
+                return new JavaScriptSerializer().Serialize(cachedResults[query]);
+            } else {
+                if (cachedResults.Count > 100)
+                {
+                    cachedResults = new Dictionary<string, List<CrawledURL>>();
+                }
+                List<CrawledURL> searchResults = TableCommunication.Search(query, 10);
+                if (!cachedResults.ContainsKey(query))
+                {
+                    cachedResults.Add(query, searchResults);
+                }
+                return new JavaScriptSerializer().Serialize(searchResults.Take(n));
+            }            
+        }
+
 
     }
 }

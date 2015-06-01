@@ -53,6 +53,8 @@
 
     window.setInterval(function () {
         GetCPU();
+        GetTrieCount();
+        GetLastWord();
     }, 10000);
 
 
@@ -329,6 +331,36 @@
             },
             error: function (msg) {
 
+            }
+        });
+    };
+
+    function GetTrieCount() {
+        $.ajax({
+            type: "POST",
+            url: "/WikiSuggest.asmx/GetTrieCount",
+            data: "{}",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                $(".trie_count").empty().append(getData(msg));
+            },
+            error: function (msg) {
+            }
+        });
+    };
+
+    function GetLastWord() {
+        $.ajax({
+            type: "POST",
+            url: "/WikiSuggest.asmx/GetLastWord",
+            data: "{}",
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (msg) {
+                $(".last_word").empty().append(getData(msg));
+            },
+            error: function (msg) {
             }
         });
     };

@@ -94,6 +94,7 @@
     <Content Include="index_script.js" />
     <Content Include="loading-blue.gif" />
     <Content Include="packages.config" />
+    <Content Include="WikiSuggest.asmx" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -114,8 +115,14 @@
       <DependentUpon>admin.asmx</DependentUpon>
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="HybridTrie.cs" />
+    <Compile Include="HybridTrieNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WebRole.cs" />
+    <Compile Include="WikiSuggest.asmx.cs">
+      <DependentUpon>WikiSuggest.asmx</DependentUpon>
+      <SubType>Component</SubType>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CrawlingLibrary\CrawlingLibrary.csproj">

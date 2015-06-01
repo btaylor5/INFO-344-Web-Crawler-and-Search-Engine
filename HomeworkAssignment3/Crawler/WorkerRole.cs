@@ -26,6 +26,7 @@ namespace Crawler
         private readonly CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
         private readonly ManualResetEvent runCompleteEvent = new ManualResetEvent(false);
         //private string[] domainBases = new string[] { "cnn.com/", "bleacherreport.com/" };
+        private Queue<string> LastIndexed = new Queue<string>();
         WebCrawler crawler;
 
         public override void Run()
@@ -99,6 +100,7 @@ namespace Crawler
                 }
                 if (lastCommand.Equals("LOAD"))
                 {
+                    crawler.touched = new HashSet<string>();
                     TableCommunication.InsertSystemStatus("LOADING", "Started AutoLoad of CNN and BleacherReport");
                     crawler.PrepareCrawlOfSite("http://www.cnn.com/robots.txt", "cnn.com/");
                     crawler.PrepareCrawlOfSite("http://bleacherreport.com/robots.txt", "bleacherreport.com/");
@@ -142,6 +144,13 @@ namespace Crawler
                             if (info != null)
                             {
                                 TableCommunication.IndexUrl(info);
+                                LastIndexed.Enqueue(info.URL);
+                                if (LastIndexed.Count > 10)
+                                {
+                                    LastIndexed.Dequeue();
+                                }
+                                var infoString = LastIndexed.Aggregate((x, y) => x + " " + y);
+                                TableCommunication.UpdateLastTen("LastTenURLS" ,infoString);
                             }
                         }
                         catch (Exception e)

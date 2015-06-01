@@ -25,9 +25,9 @@ namespace CrawlingLibrary
         //private static CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
 
         public List<string> allowedDomainBases { get; set; }
-        private HashSet<string> disallowedList;
-        private HashSet<string> touched;
-        private List<string> toVisit;
+        public HashSet<string> disallowedList { get; set; }
+        public HashSet<string> touched { get; set; }
+        public List<string> toVisit { get; set; }
 
 
         /// <summary>
