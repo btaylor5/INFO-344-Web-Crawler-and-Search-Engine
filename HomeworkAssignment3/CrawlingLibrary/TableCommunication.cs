@@ -18,14 +18,14 @@ namespace CrawlingLibrary
         private static CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
 
         private static CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-        private static CloudTable indexed = tableClient.GetTableReference("indexed");
-        private static CloudTable touched = tableClient.GetTableReference("touched");
-        private static CloudTable disallow = tableClient.GetTableReference("disallowed");
-        private static CloudTable performace = tableClient.GetTableReference("performance");
-        private static CloudTable errors = tableClient.GetTableReference("errors");
-        private static CloudTable system = tableClient.GetTableReference("system");
-        private static CloudTable crawltotals = tableClient.GetTableReference("crawltotals");
-        private static CloudTable lastTen = tableClient.GetTableReference("lastten");
+        private static CloudTable indexed = tableClient.GetTableReference("indexed2");
+        private static CloudTable touched = tableClient.GetTableReference("touched2");
+        private static CloudTable disallow = tableClient.GetTableReference("disallowed2");
+        private static CloudTable performace = tableClient.GetTableReference("performance2");
+        private static CloudTable errors = tableClient.GetTableReference("errors2");
+        private static CloudTable system = tableClient.GetTableReference("system2");
+        private static CloudTable crawltotals = tableClient.GetTableReference("crawltotals2");
+        private static CloudTable lastTen = tableClient.GetTableReference("lastten2");
         private static string[] DoNotIndex = new string[] { "is", "at", "which", "and", "on", "the", "a", "in", "cnn", "com" };
         private static char[] Remove = new char[] { ' ', '\'', '`', '\"', ',', ':', '-', '?', '!', '_', '.', '~', '/', '\\', '^', '(', ')', '#' };
         //private static char[] Replace = new char[] { '\'', '.'}

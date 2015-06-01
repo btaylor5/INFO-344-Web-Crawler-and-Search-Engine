@@ -358,7 +358,7 @@
             contentType: "application/json; charset=utf-8",
             dataType: "json",
             success: function (msg) {
-                $(".last_word").empty().append(getData(msg));
+                $(".last_word").empty().append(msg['d']);
             },
             error: function (msg) {
             }

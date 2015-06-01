@@ -6,9 +6,15 @@
 
     $("#search-box").bind("keyup", function () {
         Suggest();
-        Search();
-        NBAPlayer();
     });
+
+    $("#search-box").keyup(function () {
+        delay(function () {
+            Search();
+            NBAPlayer();
+        }, 250);
+    });
+
 
 
 function NBAPlayer() {
@@ -89,6 +95,13 @@ function printResults(data) {
         
 }
 
+var delay = (function () {
+    var timer = 0;
+    return function (callback, ms) {
+        clearTimeout(timer);
+        timer = setTimeout(callback, ms);
+    };
+})();
 
 function Search() {
         $.ajax({

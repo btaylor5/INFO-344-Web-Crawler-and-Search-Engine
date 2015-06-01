@@ -227,7 +227,7 @@ namespace CrawlingLibrary
                     var lastmod = doc.DocumentNode.SelectSingleNode("//meta[@content and @name='lastmod']");
                     var ogPubdate = doc.DocumentNode.SelectSingleNode("//meta[@content and @name='og:pubdate']");
                     var pubdate = doc.DocumentNode.SelectSingleNode("//meta[@content and @name='pubdate']");
-                    string time = "NotIncluded";
+                    string time = "Date Not Found";
                     if (ogPubdate != null)
                     {
                         time = ogPubdate.GetAttributeValue("content", "");;

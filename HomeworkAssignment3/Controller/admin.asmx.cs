@@ -268,26 +268,40 @@ namespace Controller
         [ScriptMethod(ResponseFormat = ResponseFormat.Json)]
         public string Search(string query, int n)
         {
-            query = query.ToLower();
-            if (cachedResults == null)
+            try
             {
-                cachedResults = new Dictionary<string, List<CrawledURL>>();
-            }
-            if (cachedResults.ContainsKey(query))
-            {
-                return new JavaScriptSerializer().Serialize(cachedResults[query]);
-            } else {
-                if (cachedResults.Count > 100)
+                query = query.ToLower();
+                if (cachedResults == null)
                 {
                     cachedResults = new Dictionary<string, List<CrawledURL>>();
                 }
-                List<CrawledURL> searchResults = TableCommunication.Search(query, 10);
-                if (!cachedResults.ContainsKey(query))
+                if (cachedResults.ContainsKey(query))
                 {
-                    cachedResults.Add(query, searchResults);
+                    return new JavaScriptSerializer().Serialize(cachedResults[query]);
                 }
-                return new JavaScriptSerializer().Serialize(searchResults.Take(n));
-            }            
+                else
+                {
+                    if (cachedResults.Count > 100)
+                    {
+                        cachedResults = new Dictionary<string, List<CrawledURL>>();
+                    }
+                    List<CrawledURL> searchResults = TableCommunication.Search(query, 10);
+                    if (!cachedResults.ContainsKey(query) && searchResults != null)
+                    {
+                        cachedResults.Add(query, searchResults);
+                    }
+                    else if (searchResults == null)
+                    {
+                        searchResults = new List<CrawledURL>();
+                    }
+                    return new JavaScriptSerializer().Serialize(searchResults.Take(n));
+                }
+            }
+            catch
+            {
+                return new JavaScriptSerializer().Serialize("");
+            }
+           
         }
 
 
