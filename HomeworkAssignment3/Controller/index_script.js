@@ -117,7 +117,7 @@ function Search() {
                 var data = getData(msg);
                 console.log(data);
                 $('.results-div').empty();
-                for (var i = 0; i < data.length - 1; i++) {
+                for (var i = 0; i < data.length; i++) {
                     PrintSearchResults(data[i]);
                 }
                 //jQuery.each(data, function (rec) {
@@ -144,6 +144,9 @@ function PrintSearchResults(rec) {
             rec.Title +
             "       </a>" +
         "</h4>" +
+            "<h6>" +
+            rec.URL +
+            "</h6>" +
         "<p>" +
         rec.Date +
         "</p>" +
@@ -165,12 +168,14 @@ function Suggest() {
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function (msg) {
-            $("#suggestions").empty();
-            var data = eval(msg['d']);
-            jQuery.each(data, function (rec) {
-                $("#suggestions").append("<li>" + data[rec] + "</li>");
-            });
+            $("#suggestions-list").empty();
+            var data = eval(getData(msg));
+            console.log("here");
+            console.log(data);
 
+            jQuery.each(data, function (rec) {
+                $("#suggestions-list").append("<li>" + data[rec] + "</li>");
+            });
         },
         error: function (msg) {
             console.log(msg['response']);

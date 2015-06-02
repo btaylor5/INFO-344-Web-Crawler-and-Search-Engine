@@ -7,7 +7,7 @@ namespace Controller
 {
     public class HybridTrieNode
     {
-        public static int ConvertAt = 6;
+        public static int ConvertAt = 9;
         public List<string> list;
         public Dictionary<char, HybridTrieNode> dict;
         public bool end;
