@@ -19,14 +19,14 @@ namespace CrawlingLibrary
         private static CloudStorageAccount storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
 
         private static CloudTableClient tableClient = storageAccount.CreateCloudTableClient();
-        private static CloudTable indexed = tableClient.GetTableReference("indexedprod");
-        private static CloudTable touched = tableClient.GetTableReference("touchedprod");
-        private static CloudTable disallow = tableClient.GetTableReference("disallowedprod");
-        private static CloudTable performace = tableClient.GetTableReference("performanceprod");
-        private static CloudTable errors = tableClient.GetTableReference("errorsprod");
-        private static CloudTable system = tableClient.GetTableReference("systemprod");
-        private static CloudTable crawltotals = tableClient.GetTableReference("crawltotalsprod");
-        private static CloudTable lastTen = tableClient.GetTableReference("lasttenprod");
+        private static CloudTable indexed = tableClient.GetTableReference("indexedprod1");
+        private static CloudTable touched = tableClient.GetTableReference("touchedprod1");
+        private static CloudTable disallow = tableClient.GetTableReference("disallowedprod1");
+        private static CloudTable performace = tableClient.GetTableReference("performanceprod1");
+        private static CloudTable errors = tableClient.GetTableReference("errorsprod1");
+        private static CloudTable system = tableClient.GetTableReference("systemprod1");
+        private static CloudTable crawltotals = tableClient.GetTableReference("crawltotalsprod1");
+        private static CloudTable lastTen = tableClient.GetTableReference("lasttenprod1");
         private static string[] DoNotIndex = new string[] { "is", "at", "which", "and", "on", "the", "a", "in", "cnn", "com" };
         private static char[] Remove = new char[] { ' ', '\'', '`', '\"', ',', ':', '-', '?', '!', '_', '.', '~', '/', '\\', '^', '(', ')', '#' };
         //private static char[] Replace = new char[] { '\'', '.'}
